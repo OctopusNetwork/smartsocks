@@ -2,6 +2,7 @@ package com.kkt.rtcdatachanneldemo
 
 import android.content.Context
 import android.util.Log
+import org.json.JSONObject
 import org.webrtc.*
 import java.util.*
 
@@ -41,7 +42,8 @@ class RtcClient(context: Context, peerServerSendHelper: RtcPeerServerSendHelper)
             mRtcClient.mLocalPeerConnection.setLocalDescription(this, p0)
             val str: String = "{\"sdp\":\"" + p0?.description +
                     "\",\"type\":\"" + p0?.type?.canonicalForm() + "\"}"
-            mRtcClient.mRtcPeerServerSenderHelper?.sendDataToPeer(str, mRtcClient.mRemotePeerId)
+            mRtcClient.mRtcPeerServerSenderHelper?.
+                    sendDataToPeer(str, mRtcClient.mRemotePeerId)
         }
 
         override fun onCreateFailure(p0: String?) {
@@ -57,7 +59,15 @@ class RtcClient(context: Context, peerServerSendHelper: RtcPeerServerSendHelper)
         }
 
         override fun onIceCandidate(p0: IceCandidate?) {
-            Log.d(TAG, "onIceCandidate")
+            Log.d(TAG, p0?.sdp)
+            Log.d(TAG, p0?.sdpMid)
+            Log.d(TAG, "" + p0?.sdpMLineIndex)
+
+            var str: String = "{\"candidate\":\"" + p0?.sdp + "\"," +
+                    "\"sdpMLineIndex\":\"" + p0?.sdpMLineIndex + "\"," +
+                    "\"sdpMid\":\"" + p0?.sdpMid + "\"}"
+            mRtcClient.mRtcPeerServerSenderHelper?.
+                    sendDataToPeer(str, mRtcClient.mRemotePeerId)
         }
 
         override fun onDataChannel(p0: DataChannel?) {
@@ -105,5 +115,50 @@ class RtcClient(context: Context, peerServerSendHelper: RtcPeerServerSendHelper)
 
         mRemotePeerConnection = mPeerConnectionFactory.createPeerConnection(
                 mIceServers, mPeerConnectionConstraints, mPeerObserver)
+    }
+
+    fun processSessionDescription(jsonObject: JSONObject) {
+        val typeStr: String = jsonObject.getString("type")
+        val sdpType = SessionDescription.Type.fromCanonicalForm(typeStr)
+        var sdpStr: String? = null
+
+        if (jsonObject.has("sdp")) {
+            sdpStr = jsonObject.getString("sdp")
+            val sdp = SessionDescription(sdpType, sdpStr)
+            mLocalPeerConnection.setRemoteDescription(mPeerObserver, sdp)
+            if (sdpType == SessionDescription.Type.OFFER) {
+                mLocalPeerConnection.createAnswer(mPeerObserver, MediaConstraints())
+            }
+        }
+    }
+
+    fun processIceCandidate(jsonObject: JSONObject) {
+        var sdpMid: String? = null
+        var sdpStr: String? = null
+        var sdpMLineIndex: Int? = null
+
+        if (jsonObject.has("sdpMid")) {
+            sdpMid = jsonObject.getString("sdpMid")
+        }
+
+        if (jsonObject.has("sdpMLineIndex")) {
+            sdpMLineIndex = jsonObject.getInt("sdpMLineIndex")
+        }
+
+        if (jsonObject.has("candidate")) {
+            sdpStr = jsonObject.getString("candidate")
+        }
+
+        val iceCandidate = IceCandidate(sdpMid, sdpMLineIndex!!, sdpStr)
+        mLocalPeerConnection.addIceCandidate(iceCandidate)
+    }
+
+    fun processPeerMessage(peerId: Long, message: String?) {
+        val jsonObject: JSONObject = JSONObject(message)
+        if (jsonObject.has("type")) {
+            processSessionDescription(jsonObject)
+        } else {
+            processIceCandidate(jsonObject)
+        }
     }
 }

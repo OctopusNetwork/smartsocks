@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     var mRtcPeerCon: RtcPeerContainer? = null
     var mPeerListAdapter: PeerListAdapter? = null
     var mRtcPeerListListener: RtcPeerListListener? = null
+    var mRtcPeerMessageListener: RtcPeerMessageListener? = null
 
     class PeerServerSendHelper(activity: MainActivity) : RtcClient.RtcPeerServerSendHelper {
         val mActivity: MainActivity = activity
@@ -36,7 +37,9 @@ class MainActivity : AppCompatActivity() {
 
         mPeerListAdapter = PeerListAdapter(this, mPeerList)
         mRtcPeerListListener = RtcPeerListListener(this, mHandler)
-        mRtcPeerCon = RtcPeerContainer(this, mRtcPeerListListener!!)
+        mRtcPeerMessageListener = RtcPeerMessageListener(this)
+        mRtcPeerCon = RtcPeerContainer(this,
+                mRtcPeerListListener!!, mRtcPeerMessageListener!!)
 
         mRtcClient?.init()
 
@@ -76,6 +79,13 @@ class MainActivity : AppCompatActivity() {
 
         override fun onUpdated(peerList: ArrayList<RtcPeerContainer.RtcPeer>) {
             mHandler.sendEmptyMessage(mActivity.MSG_PEER_LIST_UPDATED)
+        }
+    }
+
+    class RtcPeerMessageListener(activity: MainActivity) : RtcPeerContainer.RtcPeerMessageListener {
+        val mActivity = activity
+        override fun onPeerMessage(peerId: Long, message: String?) {
+            mActivity.mRtcClient?.processPeerMessage(peerId, message)
         }
     }
 

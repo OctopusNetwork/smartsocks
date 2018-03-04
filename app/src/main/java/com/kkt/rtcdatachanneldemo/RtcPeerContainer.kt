@@ -17,7 +17,9 @@ import java.net.Socket
 /**
  * Created by owen on 18-3-3.
  */
-class RtcPeerContainer(context: Context, peerListListener: RtcPeerListListener) {
+class RtcPeerContainer(context: Context,
+                       peerListListener: RtcPeerListListener,
+                       peerMsgListener: RtcPeerMessageListener) {
     val mLocalPeerName: String = "12345678"
     var mLocalPeerId: Long = -1
     val mPeerServer: String = "192.168.198.180:8888"
@@ -81,6 +83,7 @@ class RtcPeerContainer(context: Context, peerListListener: RtcPeerListListener) 
     }
 
     var mRtcPeerListListener: RtcPeerListListener = peerListListener
+    var mRtcPeerMsgListener: RtcPeerMessageListener = peerMsgListener
     val mRtcPeerListener: RtcPeerListener = RtcPeerListener(
             mPeerList, mRtcPeerListListener, this)
 
@@ -173,6 +176,11 @@ class RtcPeerContainer(context: Context, peerListListener: RtcPeerListListener) 
                 if (pragmaId == mLocalPeerId) {
                     mRtcPeerListListener?.onUpdated(mPeerList)
                 } else {
+                    if (!TextUtils.isEmpty(body)) {
+                        mRtcPeerMsgListener?.onPeerMessage(pragmaId, body)
+                    } else {
+                        Thread.sleep(100)
+                    }
                 }
             } while (!mLogout)
         }.start()
@@ -186,8 +194,9 @@ class RtcPeerContainer(context: Context, peerListListener: RtcPeerListListener) 
     fun sendToPeer(body: String, peerId: Long) {
         val sendString: String = "http://" + mPeerServer +
                 "/message?peer_id=" + mLocalPeerId +
-                "&to=" + peerId;
-        HttpRequest(mContext, mRtcPeerListener).post(sendString, JSONObject(body))
+                "&to=" + peerId
+        HttpRequest(mContext, mRtcPeerListener).
+                post(sendString, JSONObject(body))
     }
 
     fun getPeerList(): ArrayList<RtcPeer> {
@@ -221,5 +230,9 @@ class RtcPeerContainer(context: Context, peerListListener: RtcPeerListListener) 
 
     interface RtcPeerListListener {
         fun onUpdated(peerList: ArrayList<RtcPeer>)
+    }
+
+    interface RtcPeerMessageListener {
+        fun onPeerMessage(peerId: Long, message: String?)
     }
 }
