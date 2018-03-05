@@ -39,13 +39,13 @@ class RtcClient(context: Context,
     var mRtcPeerServerSenderHelper: RtcPeerServerSendHelper? = peerServerSendHelper
 
     class PeerObserver(rtcClient: RtcClient) : SdpObserver, PeerConnection.Observer {
-        override fun onIceConnectionReceivingChange(p0: Boolean) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
         private val TAG = "RTCDCDemo"
 
         val mRtcClient: RtcClient = rtcClient
+
+        override fun onIceConnectionReceivingChange(p0: Boolean) {
+
+        }
 
         override fun onSetSuccess() {
             Log.d(TAG, "OnSetSuccess")

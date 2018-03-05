@@ -64,14 +64,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         mRtcPeerCon?.logout()
     }
 
     val MSG_PEER_LIST_UPDATED = 0x901
 
     class MainHandler(activity: MainActivity): Handler() {
-        val mActivity = activity
+        private val mActivity = activity
         override fun handleMessage(msg: Message) {
             when (msg.what) {
                 mActivity.MSG_PEER_LIST_UPDATED -> {
@@ -89,8 +88,8 @@ class MainActivity : AppCompatActivity() {
 
     class RtcPeerListListener(activity: MainActivity, handler: MainHandler)
         : RtcPeerContainer.RtcPeerListListener {
-        val mHandler: MainHandler = handler
-        val mActivity = activity
+        private val mHandler: MainHandler = handler
+        private val mActivity = activity
 
         override fun onUpdated(peerList: ArrayList<RtcPeerContainer.RtcPeer>) {
             mHandler.sendEmptyMessage(mActivity.MSG_PEER_LIST_UPDATED)
@@ -98,7 +97,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     class RtcPeerMessageListener(activity: MainActivity) : RtcPeerContainer.RtcPeerMessageListener {
-        val mActivity = activity
+        private val mActivity = activity
         override fun onPeerMessage(peerId: Long, message: String?) {
             mActivity.mRtcClient?.processPeerMessage(peerId, message)
         }
@@ -126,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 vh = view.tag as PeerListItemHolder
             }
 
-            vh.mNameView.setText(vh.mPeer?.name)
+            vh.mNameView.text = vh.mPeer?.name
 
             return view
         }
