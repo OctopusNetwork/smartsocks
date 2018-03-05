@@ -44,4 +44,5 @@ dependencies {
     compile 'com.android.volley:volley:1.1.0'
     compile 'com.google.code.gson:gson:2.8.2'
     compile "org.jetbrains.anko:anko-coroutines:0.10.4"
+    compile 'org.bouncycastle:bcprov-jdk15on:1.57'
 }
