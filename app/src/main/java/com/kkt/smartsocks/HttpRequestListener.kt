@@ -1,4 +1,4 @@
-package com.kkt.rtcdatachanneldemo
+package com.kkt.smartsocks
 
 import com.android.volley.VolleyError
 import com.google.gson.JsonObject

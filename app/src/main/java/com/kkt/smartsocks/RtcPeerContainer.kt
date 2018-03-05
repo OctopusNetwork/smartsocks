@@ -1,4 +1,4 @@
-package com.kkt.rtcdatachanneldemo
+package com.kkt.smartsocks
 
 import android.content.Context
 import android.text.TextUtils
@@ -194,7 +194,7 @@ class RtcPeerContainer(context: Context,
         return mPeerList
     }
 
-    class RtcPeer(peerDesc: String, localPeerName: String, container:RtcPeerContainer) {
+    class RtcPeer(peerDesc: String, localPeerName: String, container: RtcPeerContainer) {
         var name: String = ""
         var id: Long = -1
         var connected: Boolean = false

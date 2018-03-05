@@ -1,4 +1,4 @@
-package com.kkt.rtcdatachanneldemo
+package com.kkt.smartsocks
 
 import android.annotation.TargetApi
 import android.content.Context

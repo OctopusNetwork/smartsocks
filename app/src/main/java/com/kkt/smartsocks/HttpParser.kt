@@ -1,4 +1,4 @@
-package com.kkt.rtcdatachanneldemo
+package com.kkt.smartsocks
 
 /**
  * Created by owen on 18-3-4.

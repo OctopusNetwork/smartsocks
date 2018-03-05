@@ -1,4 +1,4 @@
-package com.kkt.rtcdatachanneldemo
+package com.kkt.smartsocks
 
 import android.content.Context
 import android.util.Log
