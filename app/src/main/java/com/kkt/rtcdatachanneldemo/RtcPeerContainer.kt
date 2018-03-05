@@ -20,10 +20,10 @@ import java.net.Socket
 class RtcPeerContainer(context: Context,
                        peerListListener: RtcPeerListListener,
                        peerMsgListener: RtcPeerMessageListener) {
-    val mLocalPeerName: String = "12345678"
+    val mLocalPeerName: String = "12345679"
     var mLocalPeerId: Long = -1
-    val mPeerServer: String = "192.168.198.180:8888"
-    val mPeerServerHost: String = "192.168.198.180"
+    val mPeerServer: String = "192.168.196.230:8888"
+    val mPeerServerHost: String = "192.168.196.230"
     val mPeerServerPort: Int = 8888
 
     var mPeerConnected = false
@@ -61,7 +61,7 @@ class RtcPeerContainer(context: Context,
             }
 
             if (!mPeerContainer.mPeerConnected) {
-                if (!(-1).equals(mPeerContainer.mLocalPeerId)) {
+                if (-1.toLong() != mPeerContainer.mLocalPeerId) {
                     mPeerContainer.peerServerGetRequest(
                             "/wait?peer_id=" +
                                     mPeerContainer.mLocalPeerId)
@@ -124,47 +124,26 @@ class RtcPeerContainer(context: Context,
                 }
 
                 mInputStream = mPeerServerSock?.getInputStream()
+
                 val isr = InputStreamReader(mInputStream)
-                val br = BufferedReader(isr)
-                var line: String? = null
-                var bodyBeginning: Boolean = false
                 var close: Boolean = false
                 var pragmaId: Long = -1
-                var body: String? = ""
+                var body: String? = null
+                var buf: CharArray = CharArray(4096)
+                var len = 0
 
-                while (br.ready()) {
-                    line = br.readLine()
+                len = isr.read(buf)
+                isr.close()
+                if (len < 0) {
+                    break;
+                }
 
-                    if (TextUtils.isEmpty(line)) {
-                        bodyBeginning = true
-                        continue
-                    }
+                val httpStr: String = String(buf, 0, len)
 
-                    if (line.contains("Connection:") &&
-                            line.contains("close")) {
-                        close = true
-                    }
-
-                    if (line.contains("Pragma: ")) {
-                        pragmaId = line.substring("Pragma: ".length).toLong()
-                    }
-
-                    if (!bodyBeginning) {
-                        continue
-                    }
-
-                    if (pragmaId == mLocalPeerId) {
-                        var rtcPeer = RtcPeer(line, mLocalPeerName, this)
-
-                        val exist: Boolean = mPeerList.any { it.id == rtcPeer.id }
-
-                        if (!exist) {
-                            mPeerList.add(rtcPeer)
-                        }
-                    } else {
-                        // Message from another peer
-                        body += line
-                    }
+                if (HttpParser.isHttpResponse(httpStr)) {
+                    close = HttpParser.shouldBeClose(httpStr)
+                    pragmaId = HttpParser.parsePragmaId(httpStr)
+                    body = HttpParser.getBody(httpStr)
                 }
 
                 if (close) {
@@ -174,7 +153,19 @@ class RtcPeerContainer(context: Context,
                 }
 
                 if (pragmaId == mLocalPeerId) {
-                    mRtcPeerListListener?.onUpdated(mPeerList)
+                    val bodyLines = body?.split("\r\n")
+
+                    if (bodyLines != null) {
+                        for (line in bodyLines) {
+                            var rtcPeer = RtcPeer(line, mLocalPeerName, this)
+                            val exist: Boolean = mPeerList.any { it.id == rtcPeer.id }
+                            if (!exist) {
+                                mPeerList.add(rtcPeer)
+                            }
+                        }
+
+                        mRtcPeerListListener?.onUpdated(mPeerList)
+                    }
                 } else {
                     if (!TextUtils.isEmpty(body)) {
                         mRtcPeerMsgListener?.onPeerMessage(pragmaId, body)
@@ -213,7 +204,7 @@ class RtcPeerContainer(context: Context,
             if (elems . size >= 3) {
                 name = elems[0]
                 id = elems[1].toLong()
-                if (elems[2].toInt() == 1) {
+                if (elems[2].trim().toInt() == 1) {
                     connected = true
                 }
 

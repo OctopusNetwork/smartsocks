@@ -11,6 +11,7 @@ import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_main.*
+import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,9 +28,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    var mPeerServerSendHelper: PeerServerSendHelper = PeerServerSendHelper(this)
+    class DataChannelListener(activity: MainActivity) : RtcClient.RtcDataChannelListener {
+        val mActivity: MainActivity = activity
+        override fun onMessage(byteBuffer: ByteBuffer) {
+        }
 
-    var mRtcClient: RtcClient? = RtcClient(this, mPeerServerSendHelper)
+        override fun onStateChange(state: String) {
+        }
+    }
+
+    var mPeerServerSendHelper: PeerServerSendHelper = PeerServerSendHelper(this)
+    var mDataChannelListener: DataChannelListener = DataChannelListener(this)
+    var mRtcClient: RtcClient? = RtcClient(this, mPeerServerSendHelper, mDataChannelListener)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +52,6 @@ class MainActivity : AppCompatActivity() {
                 mRtcPeerListListener!!, mRtcPeerMessageListener!!)
 
         mRtcClient?.init()
-
         mRtcPeerCon!!.login()
 
         peer_list.adapter = mPeerListAdapter
@@ -51,6 +60,12 @@ class MainActivity : AppCompatActivity() {
             var holder = view.tag as PeerListItemHolder
             mRtcClient?.connectToPeer(holder.mPeer?.id)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        mRtcPeerCon?.logout()
     }
 
     val MSG_PEER_LIST_UPDATED = 0x901
