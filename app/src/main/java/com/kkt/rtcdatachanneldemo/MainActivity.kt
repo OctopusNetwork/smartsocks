@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     var mPeerListAdapter: PeerListAdapter? = null
     var mRtcPeerListListener: RtcPeerListListener? = null
     var mRtcPeerMessageListener: RtcPeerMessageListener? = null
+    var mSSProxyServer: SSProxyServer? = null
 
     class PeerServerSendHelper(activity: MainActivity) : RtcClient.RtcPeerServerSendHelper {
         val mActivity: MainActivity = activity
@@ -54,6 +55,9 @@ class MainActivity : AppCompatActivity() {
         mRtcClient?.init()
         mRtcPeerCon!!.login()
 
+        mSSProxyServer = SSProxyServer(this)
+        mSSProxyServer?.start()
+
         peer_list.adapter = mPeerListAdapter
         peer_list.onItemClickListener = AdapterView.OnItemClickListener {
             parent, view, position, id ->
@@ -64,6 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mSSProxyServer?.stop()
         mRtcPeerCon?.logout()
     }
 

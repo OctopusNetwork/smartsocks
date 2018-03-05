@@ -328,7 +328,7 @@ target_compile_definitions(libpcre
                            PUBLIC
                            -DHAVE_CONFIG_H)
 
-add_executable( ss-server
+add_executable( libss-server.so
                 src/main/jni/shadowsocks-libev/src/ppbloom.c
                 src/main/jni/shadowsocks-libev/src/utils.c
                 src/main/jni/shadowsocks-libev/src/jconf.c
@@ -348,10 +348,10 @@ add_executable( ss-server
                 src/main/jni/shadowsocks-libev/src/acl.c
                 src/main/jni/shadowsocks-libev/src/rule.c )
 
-target_include_directories(ss-server PUBLIC src/main/jni/c-ares)
-target_include_directories(ss-server PUBLIC src/main/jni)
-target_include_directories(ss-server PUBLIC src/main/jni/pcre)
-target_compile_definitions(ss-server
+target_include_directories(libss-server.so PUBLIC src/main/jni/c-ares)
+target_include_directories(libss-server.so PUBLIC src/main/jni)
+target_include_directories(libss-server.so PUBLIC src/main/jni/pcre)
+target_compile_definitions(libss-server.so
                            PUBLIC
                            -DMODULE_REMOTE
                            -DHAVE_CONFIG_H
@@ -379,7 +379,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-                       ss-server
+                       libss-server.so
 
                        # Links the target library to the log library
                        # included in the NDK.
