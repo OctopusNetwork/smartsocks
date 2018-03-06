@@ -10,10 +10,10 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_rtc_main.*
 import java.nio.ByteBuffer
 
-class MainActivity : AppCompatActivity() {
+class RtcMainActivity : AppCompatActivity() {
 
     var mPeerList: ArrayList<RtcPeerContainer.RtcPeer>? = null
     var mRtcPeerCon: RtcPeerContainer? = null
@@ -22,15 +22,15 @@ class MainActivity : AppCompatActivity() {
     var mRtcPeerMessageListener: RtcPeerMessageListener? = null
     var mSSProxyServer: SSProxyServer? = null
 
-    class PeerServerSendHelper(activity: MainActivity) : RtcClient.RtcPeerServerSendHelper {
-        val mActivity: MainActivity = activity
+    class PeerServerSendHelper(activity: RtcMainActivity) : RtcClient.RtcPeerServerSendHelper {
+        val mActivity: RtcMainActivity = activity
         override fun sendDataToPeer(data: String, peerId: Long) {
             mActivity.mRtcPeerCon?.sendToPeer(data, peerId)
         }
     }
 
-    class DataChannelListener(activity: MainActivity) : RtcClient.RtcDataChannelListener {
-        val mActivity: MainActivity = activity
+    class DataChannelListener(activity: RtcMainActivity) : RtcClient.RtcDataChannelListener {
+        val mActivity: RtcMainActivity = activity
         override fun onMessage(byteBuffer: ByteBuffer) {
         }
 
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_rtc_main)
 
         mPeerListAdapter = PeerListAdapter(this, mPeerList)
         mRtcPeerListListener = RtcPeerListListener(this, mHandler)
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
     val MSG_PEER_LIST_UPDATED = 0x901
 
-    class MainHandler(activity: MainActivity): Handler() {
+    class MainHandler(activity: RtcMainActivity): Handler() {
         private val mActivity = activity
         override fun handleMessage(msg: Message) {
             when (msg.what) {
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
     }
     val mHandler: MainHandler = MainHandler(this)
 
-    class RtcPeerListListener(activity: MainActivity, handler: MainHandler)
+    class RtcPeerListListener(activity: RtcMainActivity, handler: MainHandler)
         : RtcPeerContainer.RtcPeerListListener {
         private val mHandler: MainHandler = handler
         private val mActivity = activity
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    class RtcPeerMessageListener(activity: MainActivity) : RtcPeerContainer.RtcPeerMessageListener {
+    class RtcPeerMessageListener(activity: RtcMainActivity) : RtcPeerContainer.RtcPeerMessageListener {
         private val mActivity = activity
         override fun onPeerMessage(peerId: Long, message: String?) {
             mActivity.mRtcClient?.processPeerMessage(peerId, message)

@@ -11,7 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 
-import com.vm.shadowsocks.R;
+import com.kkt.smartsocks.R;
 import com.vm.shadowsocks.core.ProxyConfig.IPAddress;
 import com.vm.shadowsocks.dns.DnsPacket;
 import com.vm.shadowsocks.tcpip.CommonMethods;

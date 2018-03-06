@@ -25,6 +25,12 @@ add_library( # Sets the name of the library.
              src/main/jni/libev/ev.c
              src/main/jni/libev/event.c )
 
+set_target_properties( libev
+                       PROPERTIES COMPILE_FLAGS
+                       "-Wno-unused-function \
+                        -Wno-unused-variable \
+                        -Wno-unused-value " )
+
 add_library( libsodium
              STATIC
              src/main/jni/libsodium/src/libsodium/crypto_aead/chacha20poly1305/sodium/aead_chacha20poly1305.c
@@ -328,30 +334,31 @@ target_compile_definitions(libpcre
                            PUBLIC
                            -DHAVE_CONFIG_H)
 
-add_executable( libss-server.so
-                src/main/jni/shadowsocks-libev/src/ppbloom.c
-                src/main/jni/shadowsocks-libev/src/utils.c
-                src/main/jni/shadowsocks-libev/src/jconf.c
-                src/main/jni/shadowsocks-libev/src/json.c
-                src/main/jni/shadowsocks-libev/src/netutils.c
-                src/main/jni/shadowsocks-libev/src/udprelay.c
-                src/main/jni/shadowsocks-libev/src/cache.c
-                src/main/jni/shadowsocks-libev/src/resolv.c
-                src/main/jni/shadowsocks-libev/src/server.c
-                src/main/jni/shadowsocks-libev/src/crypto.c
-                src/main/jni/shadowsocks-libev/src/aead.c
-                src/main/jni/shadowsocks-libev/src/stream.c
-                src/main/jni/shadowsocks-libev/src/base64.c
-                src/main/jni/shadowsocks-libev/src/plugin.c
-                src/main/jni/shadowsocks-libev/src/http.c
-                src/main/jni/shadowsocks-libev/src/tls.c
-                src/main/jni/shadowsocks-libev/src/acl.c
-                src/main/jni/shadowsocks-libev/src/rule.c )
+add_library( ss-server
+             SHARED
+             src/main/jni/shadowsocks-libev/src/ppbloom.c
+             src/main/jni/shadowsocks-libev/src/utils.c
+             src/main/jni/shadowsocks-libev/src/jconf.c
+             src/main/jni/shadowsocks-libev/src/json.c
+             src/main/jni/shadowsocks-libev/src/netutils.c
+             src/main/jni/shadowsocks-libev/src/udprelay.c
+             src/main/jni/shadowsocks-libev/src/cache.c
+             src/main/jni/shadowsocks-libev/src/resolv.c
+             src/main/jni/shadowsocks-libev/src/server.c
+             src/main/jni/shadowsocks-libev/src/crypto.c
+             src/main/jni/shadowsocks-libev/src/aead.c
+             src/main/jni/shadowsocks-libev/src/stream.c
+             src/main/jni/shadowsocks-libev/src/base64.c
+             src/main/jni/shadowsocks-libev/src/plugin.c
+             src/main/jni/shadowsocks-libev/src/http.c
+             src/main/jni/shadowsocks-libev/src/tls.c
+             src/main/jni/shadowsocks-libev/src/acl.c
+             src/main/jni/shadowsocks-libev/src/rule.c )
 
-target_include_directories(libss-server.so PUBLIC src/main/jni/c-ares)
-target_include_directories(libss-server.so PUBLIC src/main/jni)
-target_include_directories(libss-server.so PUBLIC src/main/jni/pcre)
-target_compile_definitions(libss-server.so
+target_include_directories(ss-server PUBLIC src/main/jni/c-ares)
+target_include_directories(ss-server PUBLIC src/main/jni)
+target_include_directories(ss-server PUBLIC src/main/jni/pcre)
+target_compile_definitions(ss-server
                            PUBLIC
                            -DMODULE_REMOTE
                            -DHAVE_CONFIG_H
@@ -379,7 +386,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-                       libss-server.so
+                       ss-server
 
                        # Links the target library to the log library
                        # included in the NDK.

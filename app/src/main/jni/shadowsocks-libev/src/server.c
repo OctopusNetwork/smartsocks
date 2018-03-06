@@ -1475,7 +1475,7 @@ accept_cb(EV_P_ ev_io *w, int revents)
 }
 
 int
-main(int argc, char **argv)
+ss_server_main(int argc, char **argv)
 {
     int i, c;
     int pid_flags   = 0;
