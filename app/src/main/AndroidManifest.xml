@@ -29,6 +29,15 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".RtcMainActivity">
+        </activity>
+
+        <activity
+            android:name=".ui.AppManager"
+            android:label="@string/proxied_apps"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"/>
+
         <service
             android:name=".core.LocalVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE">

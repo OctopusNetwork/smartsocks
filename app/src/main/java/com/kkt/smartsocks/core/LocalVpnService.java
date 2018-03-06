@@ -10,6 +10,7 @@ import android.net.VpnService;
 import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 
 import com.kkt.smartsocks.R;
 import com.kkt.smartsocks.core.ProxyConfig.IPAddress;
@@ -462,8 +463,11 @@ public class LocalVpnService extends VpnService implements Runnable {
     }
 
     public static void protectSocket(int socket) {
+        Log.d("VPNService", "start protect " + socket);
         if (null != Instance) {
+            Log.d("VPNService", "protect " + socket);
             Instance.protect(socket);
         }
+        Log.d("VPNService", "done protect " + socket);
     }
 }

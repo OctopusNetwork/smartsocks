@@ -43,6 +43,12 @@ public class SSProxyServer {
     }
 
     public void stop() {
+        SSProxyServerStop();
+        try {
+            mServerThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private native int SSProxyServerStart(int argc, ArrayList<String> argv);

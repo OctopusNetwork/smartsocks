@@ -20,7 +20,7 @@ void vpn_interface_protect_socket(int socket)
         return;
     }
 
-    clazz =(*g_env)->FindClass(g_env, "com/vm/shadowsocks/core/LocalVpnService");
+    clazz =(*g_env)->FindClass(g_env, "com/kkt/smartsocks/core/LocalVpnService");
     if (NULL == clazz) {
         return;
     }

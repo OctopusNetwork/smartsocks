@@ -40,7 +40,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * Created by so898 on 2017/5/3.
  */
 
-public class AppManager extends Activity{
+public class AppManager extends Activity {
     private View loadingView;
     private RecyclerView appListView;
     private FastScroller fastScroller;

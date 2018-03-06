@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.kkt.smartsocks.R;
+import com.kkt.smartsocks.SSProxyServer;
 import com.kkt.smartsocks.core.AppInfo;
 import com.kkt.smartsocks.core.AppProxyManager;
 import com.kkt.smartsocks.core.LocalVpnService;
@@ -88,6 +89,8 @@ public class MainActivity extends Activity implements
             ((ViewGroup) findViewById(R.id.AppSelectLayout).getParent()).removeView(findViewById(R.id.AppSelectLayout));
             ((ViewGroup) findViewById(R.id.textViewAppSelectLine).getParent()).removeView(findViewById(R.id.textViewAppSelectLine));
         }
+
+        new SSProxyServer(this).start();
     }
 
     String readProxyUrl() {
