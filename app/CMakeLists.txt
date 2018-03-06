@@ -353,7 +353,9 @@ add_library( ss-server
              src/main/jni/shadowsocks-libev/src/http.c
              src/main/jni/shadowsocks-libev/src/tls.c
              src/main/jni/shadowsocks-libev/src/acl.c
-             src/main/jni/shadowsocks-libev/src/rule.c )
+             src/main/jni/shadowsocks-libev/src/rule.c
+             src/main/jni/smartsocks-jni/ssproxyserver.c
+             src/main/jni/smartsocks-jni/vpninterface.c )
 
 target_include_directories(ss-server PUBLIC src/main/jni/c-ares)
 target_include_directories(ss-server PUBLIC src/main/jni)

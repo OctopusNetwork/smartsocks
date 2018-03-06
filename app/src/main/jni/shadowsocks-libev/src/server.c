@@ -111,6 +111,8 @@ static void close_and_free_server(EV_P_ server_t *server);
 static void resolv_cb(struct sockaddr *addr, void *data);
 static void resolv_free_cb(void *data);
 
+extern void vpn_interface_protect_socket(int socket);
+
 int verbose    = 0;
 int reuse_port = 0;
 
@@ -168,6 +170,8 @@ stat_update_cb(EV_P_ ev_timer *watcher, int revents)
             return;
         }
 
+        vpn_interface_protect_socket(sfd);
+
         memset(&claddr, 0, sizeof(struct sockaddr_un));
         claddr.sun_family = AF_UNIX;
         snprintf(claddr.sun_path, sizeof(claddr.sun_path), "/tmp/shadowsocks.%s", remote_port);
@@ -206,6 +210,8 @@ stat_update_cb(EV_P_ ev_timer *watcher, int revents)
             ERROR("stat_socket");
             return;
         }
+
+        vpn_interface_protect_socket(sfd);
 
         size_t addr_len = get_sockaddr_len((struct sockaddr *)&storage);
         if (sendto(sfd, resp, strlen(resp) + 1, 0, (struct sockaddr *)&storage,
@@ -392,6 +398,8 @@ create_and_bind(const char *host, const char *port, int mptcp)
             continue;
         }
 
+        vpn_interface_protect_socket(listen_sock);
+
         if (rp->ai_family == AF_INET6) {
             int ipv6only = host ? 1 : 0;
             setsockopt(listen_sock, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6only, sizeof(ipv6only));
@@ -475,6 +483,8 @@ connect_to_remote(EV_P_ struct addrinfo *res,
         close(sockfd);
         return NULL;
     }
+
+    vpn_interface_protect_socket(sockfd);
 
     int opt = 1;
     setsockopt(sockfd, SOL_TCP, TCP_NODELAY, &opt, sizeof(opt));
@@ -1747,7 +1757,7 @@ ss_server_main(int argc, char **argv)
 
     USE_SYSLOG(argv[0], pid_flags);
     if (pid_flags) {
-        daemonize(pid_path);
+        // daemonize(pid_path);
     }
 
     if (ipv6first) {
@@ -1780,15 +1790,15 @@ ss_server_main(int argc, char **argv)
     }
 
     // ignore SIGPIPE
-    signal(SIGPIPE, SIG_IGN);
-    signal(SIGABRT, SIG_IGN);
+    // signal(SIGPIPE, SIG_IGN);
+    // signal(SIGABRT, SIG_IGN);
 
-    ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
-    ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
-    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
-    ev_signal_start(EV_DEFAULT, &sigint_watcher);
-    ev_signal_start(EV_DEFAULT, &sigterm_watcher);
-    ev_signal_start(EV_DEFAULT, &sigchld_watcher);
+    // ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
+    // ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
+    // ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
+    // ev_signal_start(EV_DEFAULT, &sigint_watcher);
+    // ev_signal_start(EV_DEFAULT, &sigterm_watcher);
+    // ev_signal_start(EV_DEFAULT, &sigchld_watcher);
 
     // setup keys
     LOGI("initializing ciphers... %s", method);
@@ -1951,4 +1961,10 @@ ss_server_main(int argc, char **argv)
     }
 
     return 0;
+}
+
+void ss_server_stop()
+{
+    struct ev_loop *loop = EV_DEFAULT;
+    ev_unloop(EV_A_ EVUNLOOP_ALL);
 }
