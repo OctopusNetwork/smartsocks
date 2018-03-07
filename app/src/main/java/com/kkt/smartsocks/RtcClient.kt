@@ -109,7 +109,7 @@ class RtcClient(context: Context,
 
     fun init() {
         PeerConnectionFactory.initializeAndroidGlobals(mContext, true, true, true)
-        mIceServers.add(PeerConnection.IceServer("stun:192.168.196.230:9999"))
+        mIceServers.add(PeerConnection.IceServer("stun:192.168.199.199:9999"))
         mPeerConnectionFactory = PeerConnectionFactory()
         Logging.enableTracing("logcat:",
                 EnumSet.of(Logging.TraceLevel.TRACE_ALL),

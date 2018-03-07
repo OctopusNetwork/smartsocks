@@ -22,8 +22,8 @@ class RtcPeerContainer(context: Context,
                        peerMsgListener: RtcPeerMessageListener) {
     val mLocalPeerName: String = "12345679"
     var mLocalPeerId: Long = -1
-    val mPeerServer: String = "192.168.196.230:8888"
-    val mPeerServerHost: String = "192.168.196.230"
+    val mPeerServer: String = "192.168.199.199:8888"
+    val mPeerServerHost: String = "192.168.199.199"
     val mPeerServerPort: Int = 8888
 
     var mPeerConnected = false
@@ -88,7 +88,7 @@ class RtcPeerContainer(context: Context,
             mPeerList, mRtcPeerListListener, this)
 
     private fun peerServerGetRequest(query: String) {
-        var reqString = "GET " + query + " HTTP/1.1\r\n"
+        var reqString = "GET $query HTTP/1.1\r\n"
 
         reqString += "User-Agent: Dalvik/2.1.0 (Linux; U; Android 5.0.1; GT-I9500 Build/LRX22C)\r\n"
         reqString += "Host: " + mPeerServer + "\r\n"
@@ -99,7 +99,7 @@ class RtcPeerContainer(context: Context,
             if (mPeerServerSock == null) {
                 mPeerServerSock = Socket(mPeerServerHost, mPeerServerPort)
             }
-            if (mPeerServerSock?.isConnected()!!) {
+            if (mPeerServerSock?.isConnected!!) {
                 mOutputStream = mPeerServerSock?.getOutputStream()
                 mOutputStream?.write(reqString.toByteArray())
                 mOutputStream?.flush()

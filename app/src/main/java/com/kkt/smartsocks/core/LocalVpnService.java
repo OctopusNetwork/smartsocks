@@ -56,6 +56,8 @@ public class LocalVpnService extends VpnService implements Runnable {
     private long m_SentBytes;
     private long m_ReceivedBytes;
 
+    private static ArrayList<Integer> m_ProtectedSockets = new ArrayList<>();
+
     public LocalVpnService() {
         ID++;
         m_Handler = new Handler();
@@ -67,6 +69,12 @@ public class LocalVpnService extends VpnService implements Runnable {
         Instance = this;
 
         System.out.printf("New VPNService(%d)\n", ID);
+
+        for (Integer socket : m_ProtectedSockets) {
+            System.out.printf("New VPNService(%d) protect %d\n", ID, socket);
+            protectSocket(socket);
+        }
+        m_ProtectedSockets.clear();
     }
 
     @Override
@@ -463,11 +471,10 @@ public class LocalVpnService extends VpnService implements Runnable {
     }
 
     public static void protectSocket(int socket) {
-        Log.d("VPNService", "start protect " + socket);
         if (null != Instance) {
-            Log.d("VPNService", "protect " + socket);
             Instance.protect(socket);
+        } else {
+            m_ProtectedSockets.add(socket);
         }
-        Log.d("VPNService", "done protect " + socket);
     }
 }
