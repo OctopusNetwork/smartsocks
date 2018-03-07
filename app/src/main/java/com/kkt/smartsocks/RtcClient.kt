@@ -5,6 +5,9 @@ import android.util.Log
 import org.json.JSONObject
 import org.webrtc.*
 import java.nio.ByteBuffer
+import java.nio.CharBuffer
+import java.nio.charset.Charset
+import java.nio.charset.CharsetDecoder
 import java.util.*
 
 /**
@@ -39,6 +42,14 @@ class RtcClient(context: Context,
     var mRtcPeerServerSenderHelper: RtcPeerServerSendHelper? = peerServerSendHelper
 
     class PeerObserver(rtcClient: RtcClient) : SdpObserver, PeerConnection.Observer {
+        override fun onIceCandidatesRemoved(p0: Array<out IceCandidate>?) {
+
+        }
+
+        override fun onAddTrack(p0: RtpReceiver?, p1: Array<out MediaStream>?) {
+
+        }
+
         private val TAG = "RTCDCDemo"
 
         val mRtcClient: RtcClient = rtcClient
@@ -108,12 +119,14 @@ class RtcClient(context: Context,
     private val mPeerObserver: PeerObserver = PeerObserver(this)
 
     fun init() {
-        PeerConnectionFactory.initializeAndroidGlobals(mContext, true, true, true)
+        PeerConnectionFactory.initialize(
+                PeerConnectionFactory.InitializationOptions.builder(mContext)
+                        .setFieldTrials("")
+                        .setEnableVideoHwAcceleration(true)
+                        .setEnableInternalTracer(true)
+                        .createInitializationOptions())
         mIceServers.add(PeerConnection.IceServer("stun:192.168.199.199:9999"))
         mPeerConnectionFactory = PeerConnectionFactory()
-        Logging.enableTracing("logcat:",
-                EnumSet.of(Logging.TraceLevel.TRACE_ALL),
-                Logging.Severity.LS_INFO)
     }
 
     class DataChannelObserver(rtcClient: RtcClient): DataChannel.Observer {
@@ -125,11 +138,27 @@ class RtcClient(context: Context,
 
         override fun onMessage(p0: DataChannel.Buffer?) {
             mRtcClient.mRtcDataChannelListener.onMessage(p0?.data!!)
+
+            var charset: Charset? = null
+            var decoder: CharsetDecoder? = null
+            var charBuffer: CharBuffer? = null
+
+            try {
+                charset = Charset.forName("UTF-8")
+                decoder = charset.newDecoder()
+                charBuffer = decoder.decode(p0.data.asReadOnlyBuffer())
+                Log.d("XXXX", charBuffer.toString())
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
         }
 
         override fun onStateChange() {
             mRtcClient.mRtcDataChannelListener.onStateChange(
                     mRtcClient.mSendDataChannel?.state()?.name!!)
+            /* mRtcClient?.mSendDataChannel?.send(
+                    DataChannel.Buffer(
+                            ByteBuffer.wrap("Hello".toByteArray()), true)) */
         }
     }
 
