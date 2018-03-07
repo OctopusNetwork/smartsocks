@@ -6,6 +6,7 @@ import android.util.Log
 import com.android.volley.VolleyError
 import com.google.gson.JsonObject
 import org.json.JSONObject
+import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
@@ -35,6 +36,8 @@ class RtcPeerContainer(context: Context,
 
     var mOutputStream: OutputStream? = null
     var mInputStream: InputStream? = null
+
+    var mPeerClientThread: Thread? = null
 
     class RtcPeerListener(peerList: ArrayList<RtcPeer>,
                           peerListListener: RtcPeerListListener,
@@ -114,7 +117,7 @@ class RtcPeerContainer(context: Context,
                 "/sign_in?" + mLocalPeerName
         HttpRequest(mContext, mRtcPeerListener).get(loginString)
 
-        Thread {
+        mPeerClientThread = Thread {
             do {
                 if (mPeerServerSock == null) {
                     Thread.sleep(100)
@@ -130,54 +133,62 @@ class RtcPeerContainer(context: Context,
                 var buf: CharArray = CharArray(4096)
                 var len = 0
 
-                len = isr.read(buf)
-                isr.close()
-                if (len < 0) {
-                    break;
-                }
+                try {
+                    len = isr.read(buf)
+                    isr.close()
+                    if (len < 0) {
+                        break;
+                    }
 
-                val httpStr: String = String(buf, 0, len)
+                    val httpStr: String = String(buf, 0, len)
 
-                if (HttpParser.isHttpResponse(httpStr)) {
-                    close = HttpParser.shouldBeClose(httpStr)
-                    pragmaId = HttpParser.parsePragmaId(httpStr)
-                    body = HttpParser.getBody(httpStr)
-                }
+                    if (HttpParser.isHttpResponse(httpStr)) {
+                        close = HttpParser.shouldBeClose(httpStr)
+                        pragmaId = HttpParser.parsePragmaId(httpStr)
+                        body = HttpParser.getBody(httpStr)
+                    }
 
-                if (close) {
-                    mPeerServerSock?.close()
-                    mPeerServerSock = null
-                    peerServerGetRequest("/wait?peer_id=" + mLocalPeerId)
-                }
+                    if (close) {
+                        mPeerServerSock?.close()
+                        mPeerServerSock = null
+                        peerServerGetRequest("/wait?peer_id=" + mLocalPeerId)
+                    }
 
-                Log.d("XXXX", "" + pragmaId + " / " + mLocalPeerId)
-                if (pragmaId == mLocalPeerId) {
-                    val bodyLines = body?.split("\r\n")
+                    if (pragmaId == mLocalPeerId) {
+                        val bodyLines = body?.split("\r\n")
 
-                    if (bodyLines != null) {
-                        for (line in bodyLines) {
-                            var rtcPeer = RtcPeer(line, mLocalPeerName, this)
-                            val exist: Boolean = mPeerList.any { it.id == rtcPeer.id }
-                            if (!exist) {
-                                mPeerList.add(rtcPeer)
+                        if (bodyLines != null) {
+                            for (line in bodyLines) {
+                                var rtcPeer = RtcPeer(line, mLocalPeerName, this)
+                                val exist: Boolean = mPeerList.any { it.id == rtcPeer.id }
+                                if (!exist) {
+                                    mPeerList.add(rtcPeer)
+                                }
                             }
-                        }
 
-                        mRtcPeerListListener?.onUpdated(mPeerList)
-                    }
-                } else {
-                    if (!TextUtils.isEmpty(body)) {
-                        mRtcPeerMsgListener?.onPeerMessage(pragmaId, body)
+                            mRtcPeerListListener?.onUpdated(mPeerList)
+                        }
                     } else {
-                        Thread.sleep(100)
+                        if (!TextUtils.isEmpty(body)) {
+                            mRtcPeerMsgListener?.onPeerMessage(pragmaId, body)
+                        } else {
+                            Thread.sleep(100)
+                        }
                     }
+                } catch (error: IOException) {
+                    error.printStackTrace()
                 }
             } while (!mLogout)
-        }.start()
+        }
+
+        mPeerClientThread?.start()
     }
 
     fun logout() {
         mLogout = true
+        mPeerServerSock?.close()
+        mPeerServerSock = null
+        mPeerClientThread?.join()
         peerServerClose()
     }
 

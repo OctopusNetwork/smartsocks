@@ -2,10 +2,15 @@ package com.kkt.smartsocks
 
 import android.content.Context
 import android.util.Log
+import org.json.JSONException
 import org.json.JSONObject
 import org.webrtc.*
 import java.nio.ByteBuffer
 import java.util.*
+
+
+
+
 
 /**
  * Created by owen on 18-3-3.
@@ -118,18 +123,25 @@ class RtcClient(context: Context,
     private val mPeerObserver: PeerObserver = PeerObserver(this)
 
     fun init() {
+        mIceServers.add(PeerConnection.IceServer("stun:192.168.199.199:9999"))
         PeerConnectionFactory.initialize(
                 PeerConnectionFactory.InitializationOptions.builder(mContext)
                         .setFieldTrials("")
                         .setEnableVideoHwAcceleration(true)
                         .setEnableInternalTracer(true)
                         .createInitializationOptions())
-        mIceServers.add(PeerConnection.IceServer("stun:192.168.199.199:9999"))
+        mPeerConnectionFactory = PeerConnectionFactory.builder().createPeerConnectionFactory()
+
+        /*
+        PeerConnectionFactory.initializeAndroidGlobals(mContext, true, true, true)
         mPeerConnectionFactory = PeerConnectionFactory()
+        */
     }
 
     fun final() {
         mPeerConnectionFactory.dispose()
+        PeerConnectionFactory.stopInternalTracingCapture()
+        PeerConnectionFactory.shutdownInternalTracer()
     }
 
     class DataChannelObserver(rtcClient: RtcClient): DataChannel.Observer {
@@ -229,21 +241,24 @@ class RtcClient(context: Context,
     }
 
     fun processPeerMessage(peerId: Long, message: String?) {
-        Log.d("XXXX", message)
-        val jsonObject: JSONObject = JSONObject(message)
+        try {
+            val jsonObject: JSONObject = JSONObject(message)
 
-        if (-1.toLong() == mRemotePeerId) {
-            mRemotePeerId = peerId
-        }
+            if ((-1).toLong() == mRemotePeerId) {
+                mRemotePeerId = peerId
+            }
 
-        if (mRemotePeerId != peerId) {
-            // Error
-        }
+            if (mRemotePeerId != peerId) {
+                // Error
+            }
 
-        if (jsonObject.has("type")) {
-            processSessionDescription(jsonObject)
-        } else {
-            processIceCandidate(jsonObject)
+            if (jsonObject.has("type")) {
+                processSessionDescription(jsonObject)
+            } else {
+                processIceCandidate(jsonObject)
+            }
+        } catch (error: JSONException) {
+            error.printStackTrace()
         }
     }
 }

@@ -369,6 +369,9 @@ target_compile_definitions(ss-server
                            -D__linux__
                            -DHAVE_PCRE_H
                            -DCONNECT_IN_PROGRESS=EINPROGRESS)
+set_target_properties( ss-server
+                       PROPERTIES COMPILE_FLAGS
+                       "-g -O0" )
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

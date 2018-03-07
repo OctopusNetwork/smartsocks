@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -58,15 +59,15 @@ class RtcMainActivity : AppCompatActivity() {
                 mDataChannelListener, mRtcPeerListListener!!)
         mRtcInstance?.initialize()
 
-        mSSProxyServer = SSProxyServer(this)
-        mSSProxyServer?.start()
-
         peer_list.adapter = mPeerListAdapter
         peer_list.onItemClickListener = AdapterView.OnItemClickListener {
             parent, view, position, id ->
             var holder = view.tag as PeerListItemHolder
             mRtcInstance?.connectToPeer(holder.mPeer?.id)
         }
+
+        mSSProxyServer = SSProxyServer(this)
+        mSSProxyServer?.start()
     }
 
     override fun onDestroy() {

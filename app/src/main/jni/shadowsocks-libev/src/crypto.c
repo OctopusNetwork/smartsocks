@@ -211,7 +211,9 @@ crypto_derive_key(const char *pass, uint8_t *key, size_t key_len)
     int addmd;
     unsigned int i, j, mds;
 
+    LOGI("crypto_derive_key... 1");
     mds = mbedtls_md_get_size(md);
+    LOGI("crypto_derive_key... 2");
     memset(&c, 0, sizeof(mbedtls_md_context_t));
 
     if (pass == NULL)
@@ -234,6 +236,7 @@ crypto_derive_key(const char *pass, uint8_t *key, size_t key_len)
         }
     }
 
+    LOGI("crypto_derive_key... 3");
     mbedtls_md_free(&c);
     return key_len;
 }

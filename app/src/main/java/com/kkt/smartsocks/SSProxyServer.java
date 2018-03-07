@@ -45,12 +45,9 @@ public class SSProxyServer {
     }
 
     public void stop() {
-        Log.d("XXXX", "pre stop");
         SSProxyServerStop();
-        Log.d("XXXX", "post stop");
         try {
             mServerThread.join();
-            Log.d("XXXX", "pre join");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

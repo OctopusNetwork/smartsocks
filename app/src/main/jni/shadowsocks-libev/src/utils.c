@@ -219,7 +219,7 @@ void
 FATAL(const char *msg)
 {
     LOGE("%s", msg);
-    exit(-1);
+    // exit(-1);
 }
 
 void *

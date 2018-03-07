@@ -1488,7 +1488,12 @@ static int g_pipe_fd[2];
 static void
 pipe_cb(EV_P_ ev_io *w, int revents)
 {
-    ev_unloop(EV_DEFAULT, EVBREAK_ALL);
+    char buf[32];
+    read(g_pipe_fd[0], buf, 1);
+    ev_signal_stop(EV_DEFAULT, &sigint_watcher);
+    ev_signal_stop(EV_DEFAULT, &sigterm_watcher);
+    ev_signal_stop(EV_DEFAULT, &sigchld_watcher);
+    ev_unloop(EV_A_ EVUNLOOP_ALL);
 }
 
 int
@@ -1540,6 +1545,7 @@ ss_server_main(int argc, char **argv)
 
     USE_TTY();
 
+    optind = 0;
     while ((c = getopt_long(argc, argv, "f:s:p:l:k:t:m:b:c:i:d:a:n:huUv6A",
                             long_options, NULL)) != -1) {
         switch (c) {
@@ -1631,7 +1637,7 @@ ss_server_main(int argc, char **argv)
         case GETOPT_VAL_HELP:
         case 'h':
             usage();
-            exit(EXIT_SUCCESS);
+            // exit(EXIT_SUCCESS);
         case '6':
             ipv6first = 1;
             break;
@@ -1648,7 +1654,7 @@ ss_server_main(int argc, char **argv)
 
     if (opterr) {
         usage();
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
     }
 
     if (argc == 1) {
@@ -1726,7 +1732,7 @@ ss_server_main(int argc, char **argv)
     if (server_num == 0 || server_port == NULL
         || (password == NULL && key == NULL)) {
         usage();
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
     }
 
     remote_port = server_port;
@@ -1844,7 +1850,7 @@ ss_server_main(int argc, char **argv)
 
     // initialize pipe fd for exit
     pipe(g_pipe_fd);
-    ev_io pipe_io;
+    static ev_io pipe_io;
     ev_io_init(&pipe_io, pipe_cb, g_pipe_fd[0], EV_READ);
     ev_io_start(loop, &pipe_io);
 
@@ -1964,6 +1970,10 @@ ss_server_main(int argc, char **argv)
         if (plugin != NULL)
             break;
     }
+
+    ev_io_stop(loop, &pipe_io);
+    close(g_pipe_fd[0]);
+    close(g_pipe_fd[1]);
 
     if (mode != UDP_ONLY) {
         free_connections(loop);
