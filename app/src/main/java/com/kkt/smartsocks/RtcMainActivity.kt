@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -17,32 +16,34 @@ import java.nio.ByteBuffer
 class RtcMainActivity : AppCompatActivity() {
 
     var mPeerList: ArrayList<RtcPeerContainer.RtcPeer>? = null
-    var mRtcPeerCon: RtcPeerContainer? = null
     var mPeerListAdapter: PeerListAdapter? = null
     var mRtcPeerListListener: RtcPeerListListener? = null
-    var mRtcPeerMessageListener: RtcPeerMessageListener? = null
+
+    var mRtcInstance: RtcInstance? = null
+
     var mSSProxyServer: SSProxyServer? = null
 
-    class PeerServerSendHelper(activity: RtcMainActivity) : RtcClient.RtcPeerServerSendHelper {
-        val mActivity: RtcMainActivity = activity
-        override fun sendDataToPeer(data: String, peerId: Long) {
-            mActivity.mRtcPeerCon?.sendToPeer(data, peerId)
-        }
-    }
+    var mRunning: Boolean = false
 
     class DataChannelListener(activity: RtcMainActivity) : RtcClient.RtcDataChannelListener {
         val mActivity: RtcMainActivity = activity
         override fun onMessage(byteBuffer: ByteBuffer) {
+            Utils.log(byteBuffer)
         }
 
         override fun onStateChange(state: String) {
-            Log.d("XXXX", "Data Channel " + state)
+            if ("OPEN" == state) {
+                Thread {
+                    do {
+                        mActivity.mRtcInstance?.sendString("Hello Brother")
+                        Thread.sleep(100)
+                    } while (mActivity.mRunning)
+                }.start()
+            }
         }
     }
 
-    var mPeerServerSendHelper: PeerServerSendHelper = PeerServerSendHelper(this)
     var mDataChannelListener: DataChannelListener = DataChannelListener(this)
-    var mRtcClient: RtcClient? = RtcClient(this, mPeerServerSendHelper, mDataChannelListener)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,12 +51,12 @@ class RtcMainActivity : AppCompatActivity() {
 
         mPeerListAdapter = PeerListAdapter(this, mPeerList)
         mRtcPeerListListener = RtcPeerListListener(this, mHandler)
-        mRtcPeerMessageListener = RtcPeerMessageListener(this)
-        mRtcPeerCon = RtcPeerContainer(this,
-                mRtcPeerListListener!!, mRtcPeerMessageListener!!)
 
-        mRtcClient?.init()
-        mRtcPeerCon!!.login()
+        mRunning = true
+
+        mRtcInstance = RtcInstance(this,
+                mDataChannelListener, mRtcPeerListListener!!)
+        mRtcInstance?.initialize()
 
         mSSProxyServer = SSProxyServer(this)
         mSSProxyServer?.start()
@@ -64,14 +65,15 @@ class RtcMainActivity : AppCompatActivity() {
         peer_list.onItemClickListener = AdapterView.OnItemClickListener {
             parent, view, position, id ->
             var holder = view.tag as PeerListItemHolder
-            mRtcClient?.connectToPeer(holder.mPeer?.id)
+            mRtcInstance?.connectToPeer(holder.mPeer?.id)
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        mRunning = false
         mSSProxyServer?.stop()
-        mRtcPeerCon?.logout()
+        mRtcInstance?.finalize()
     }
 
     val MSG_PEER_LIST_UPDATED = 0x901
@@ -81,7 +83,7 @@ class RtcMainActivity : AppCompatActivity() {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
                 mActivity.MSG_PEER_LIST_UPDATED -> {
-                    mActivity.mPeerList = mActivity.mRtcPeerCon?.getPeerList()
+                    mActivity.mPeerList = mActivity.mRtcInstance?.getPeerList()
                     mActivity.mPeerListAdapter?.updatePeerList(mActivity.mPeerList!!)
                     mActivity.mPeerListAdapter?.notifyDataSetChanged()
                 }
@@ -100,13 +102,6 @@ class RtcMainActivity : AppCompatActivity() {
 
         override fun onUpdated(peerList: ArrayList<RtcPeerContainer.RtcPeer>) {
             mHandler.sendEmptyMessage(mActivity.MSG_PEER_LIST_UPDATED)
-        }
-    }
-
-    class RtcPeerMessageListener(activity: RtcMainActivity) : RtcPeerContainer.RtcPeerMessageListener {
-        private val mActivity = activity
-        override fun onPeerMessage(peerId: Long, message: String?) {
-            mActivity.mRtcClient?.processPeerMessage(peerId, message)
         }
     }
 

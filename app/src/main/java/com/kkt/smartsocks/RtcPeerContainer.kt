@@ -2,6 +2,7 @@ package com.kkt.smartsocks
 
 import android.content.Context
 import android.text.TextUtils
+import android.util.Log
 import com.android.volley.VolleyError
 import com.google.gson.JsonObject
 import org.json.JSONObject
@@ -149,6 +150,7 @@ class RtcPeerContainer(context: Context,
                     peerServerGetRequest("/wait?peer_id=" + mLocalPeerId)
                 }
 
+                Log.d("XXXX", "" + pragmaId + " / " + mLocalPeerId)
                 if (pragmaId == mLocalPeerId) {
                     val bodyLines = body?.split("\r\n")
 

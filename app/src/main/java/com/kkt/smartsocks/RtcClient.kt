@@ -5,9 +5,6 @@ import android.util.Log
 import org.json.JSONObject
 import org.webrtc.*
 import java.nio.ByteBuffer
-import java.nio.CharBuffer
-import java.nio.charset.Charset
-import java.nio.charset.CharsetDecoder
 import java.util.*
 
 /**
@@ -28,6 +25,8 @@ class RtcClient(context: Context,
     private var mRemotePeerId: Long = -1
 
     private var mContext: Context = context
+
+    private var mCanSendData: Boolean = false
 
     interface RtcPeerServerSendHelper {
         fun sendDataToPeer(data: String, peerId: Long)
@@ -129,6 +128,10 @@ class RtcClient(context: Context,
         mPeerConnectionFactory = PeerConnectionFactory()
     }
 
+    fun final() {
+        mPeerConnectionFactory.dispose()
+    }
+
     class DataChannelObserver(rtcClient: RtcClient): DataChannel.Observer {
         override fun onBufferedAmountChange(p0: Long) {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -138,19 +141,6 @@ class RtcClient(context: Context,
 
         override fun onMessage(p0: DataChannel.Buffer?) {
             mRtcClient.mRtcDataChannelListener.onMessage(p0?.data!!)
-
-            var charset: Charset? = null
-            var decoder: CharsetDecoder? = null
-            var charBuffer: CharBuffer? = null
-
-            try {
-                charset = Charset.forName("UTF-8")
-                decoder = charset.newDecoder()
-                charBuffer = decoder.decode(p0.data.asReadOnlyBuffer())
-                Log.d("XXXX", charBuffer.toString())
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
         }
 
         override fun onStateChange() {
@@ -159,6 +149,23 @@ class RtcClient(context: Context,
             /* mRtcClient?.mSendDataChannel?.send(
                     DataChannel.Buffer(
                             ByteBuffer.wrap("Hello".toByteArray()), true)) */
+
+            if (DataChannel.State.OPEN == mRtcClient.mSendDataChannel?.state()) {
+                mRtcClient.mCanSendData = true
+            }
+        }
+    }
+
+    fun sendString(str: String) {
+        if (mCanSendData) {
+            sendBinary(str.toByteArray())
+        }
+    }
+
+    fun sendBinary(bytes: ByteArray) {
+        if (mCanSendData) {
+            mSendDataChannel?.send(DataChannel.Buffer(
+                    ByteBuffer.wrap(bytes), true))
         }
     }
 
@@ -222,6 +229,7 @@ class RtcClient(context: Context,
     }
 
     fun processPeerMessage(peerId: Long, message: String?) {
+        Log.d("XXXX", message)
         val jsonObject: JSONObject = JSONObject(message)
 
         if (-1.toLong() == mRemotePeerId) {

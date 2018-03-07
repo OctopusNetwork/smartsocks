@@ -1484,6 +1484,13 @@ accept_cb(EV_P_ ev_io *w, int revents)
     ev_timer_start(EV_A_ & server->recv_ctx->watcher);
 }
 
+static int g_pipe_fd[2];
+static void
+pipe_cb(EV_P_ ev_io *w, int revents)
+{
+    ev_unloop(EV_DEFAULT, EVBREAK_ALL);
+}
+
 int
 ss_server_main(int argc, char **argv)
 {
@@ -1793,12 +1800,12 @@ ss_server_main(int argc, char **argv)
     // signal(SIGPIPE, SIG_IGN);
     // signal(SIGABRT, SIG_IGN);
 
-    // ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
-    // ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
-    // ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
-    // ev_signal_start(EV_DEFAULT, &sigint_watcher);
-    // ev_signal_start(EV_DEFAULT, &sigterm_watcher);
-    // ev_signal_start(EV_DEFAULT, &sigchld_watcher);
+    ev_signal_init(&sigint_watcher, signal_cb, SIGINT);
+    ev_signal_init(&sigterm_watcher, signal_cb, SIGTERM);
+    ev_signal_init(&sigchld_watcher, signal_cb, SIGCHLD);
+    ev_signal_start(EV_DEFAULT, &sigint_watcher);
+    ev_signal_start(EV_DEFAULT, &sigterm_watcher);
+    ev_signal_start(EV_DEFAULT, &sigchld_watcher);
 
     // setup keys
     LOGI("initializing ciphers... %s", method);
@@ -1834,6 +1841,12 @@ ss_server_main(int argc, char **argv)
             FATAL("failed to start the plugin");
         }
     }
+
+    // initialize pipe fd for exit
+    pipe(g_pipe_fd);
+    ev_io pipe_io;
+    ev_io_init(&pipe_io, pipe_cb, g_pipe_fd[0], EV_READ);
+    ev_io_start(loop, &pipe_io);
 
     // initialize listen context
     listen_ctx_t listen_ctx_list[server_num];
@@ -1965,6 +1978,5 @@ ss_server_main(int argc, char **argv)
 
 void ss_server_stop()
 {
-    struct ev_loop *loop = EV_DEFAULT;
-    ev_unloop(EV_A_ EVUNLOOP_ALL);
+    write(g_pipe_fd[1], "x", 1);
 }

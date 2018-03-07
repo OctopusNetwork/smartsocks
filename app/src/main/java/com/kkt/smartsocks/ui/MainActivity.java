@@ -89,8 +89,6 @@ public class MainActivity extends Activity implements
             ((ViewGroup) findViewById(R.id.AppSelectLayout).getParent()).removeView(findViewById(R.id.AppSelectLayout));
             ((ViewGroup) findViewById(R.id.textViewAppSelectLine).getParent()).removeView(findViewById(R.id.textViewAppSelectLine));
         }
-
-        new SSProxyServer(this).start();
     }
 
     String readProxyUrl() {

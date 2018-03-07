@@ -1,6 +1,8 @@
 package com.kkt.smartsocks;
 
 import android.content.Context;
+import android.util.Log;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -43,9 +45,12 @@ public class SSProxyServer {
     }
 
     public void stop() {
+        Log.d("XXXX", "pre stop");
         SSProxyServerStop();
+        Log.d("XXXX", "post stop");
         try {
             mServerThread.join();
+            Log.d("XXXX", "pre join");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
