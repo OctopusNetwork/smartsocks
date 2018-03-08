@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -74,7 +73,7 @@ class RtcMainActivity : AppCompatActivity() {
         super.onDestroy()
         mRunning = false
         mSSProxyServer?.stop()
-        mRtcInstance?.finalize()
+        mRtcInstance?.final()
     }
 
     val MSG_PEER_LIST_UPDATED = 0x901

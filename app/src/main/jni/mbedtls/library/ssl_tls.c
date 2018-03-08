@@ -3012,7 +3012,7 @@ static int ssl_reassemble_dtls_handshake( mbedtls_ssl_context *ssl )
 
     /*
      * Do we have the complete message by now?
-     * If yes, finalize it, else ask to read the next record.
+     * If yes, final it, else ask to read the next record.
      */
     if( ssl_bitmask_check( bitmask, msg_len ) != 0 )
     {

@@ -41,7 +41,7 @@ class RtcInstance(context: Context,
         mRtcPeerCon!!.login()
     }
 
-    fun finalize() {
+    fun final() {
         mRtcPeerCon?.logout()
         mRtcClient?.final()
     }

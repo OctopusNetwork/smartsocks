@@ -309,7 +309,7 @@ cipher_ctx_set_nonce(cipher_ctx_t *cipher_ctx, uint8_t *nonce, size_t nonce_len,
     }
     if (mbedtls_cipher_reset(evp) != 0) {
         mbedtls_cipher_free(evp);
-        FATAL("Cannot finalize mbed TLS cipher context");
+        FATAL("Cannot final mbed TLS cipher context");
     }
 
 #ifdef SS_DEBUG
