@@ -344,7 +344,7 @@ static void TestReplace() {
     CHECK_EQ(replace_count, t->global_count);
   }
 
-  // One final test: test \r\n replacement when we're not in CRLF mode
+  // One release test: test \r\n replacement when we're not in CRLF mode
   {
     RE re("b*", RE_Options(PCRE_NEWLINE_CR).set_utf8(support_utf8));
     assert(re.error().empty());

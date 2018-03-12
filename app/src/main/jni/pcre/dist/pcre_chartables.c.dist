@@ -15,7 +15,7 @@ current locale. If PCRE is configured with --enable-rebuild-chartables, this
 happens automatically.
 
 The following #includes are present because without them gcc 4.x may remove the
-array definition from the final binary if PCRE is built into a static library
+array definition from the release binary if PCRE is built into a static library
 and dead code stripping is activated. This leads to link errors. Pulling in the
 header ensures that the array gets flagged as "someone outside this compilation
 unit might reference this" and so it will always be supplied to the linker. */

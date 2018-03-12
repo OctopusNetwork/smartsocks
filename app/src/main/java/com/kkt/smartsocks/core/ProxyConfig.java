@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 
 public class ProxyConfig {
     public static final ProxyConfig Instance = new ProxyConfig();
-    public final static boolean IS_DEBUG = false;
+    public final static boolean IS_DEBUG = true;
     public static String AppInstallID;
     public static String AppVersion;
     public final static int FAKE_NETWORK_MASK = CommonMethods.ipStringToInt("255.255.0.0");
@@ -41,7 +41,8 @@ public class ProxyConfig {
     public ArrayList<Config> m_ProxyList;
     HashMap<String, Boolean> m_DomainMap;
 
-    public boolean globalMode = false;
+    public boolean globalMode = true;
+    public boolean enableRtcTunnel = true;
 
     int m_dns_ttl;
     String m_welcome_info;

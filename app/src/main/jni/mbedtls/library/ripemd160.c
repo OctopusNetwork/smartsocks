@@ -342,7 +342,7 @@ static const unsigned char ripemd160_padding[64] =
 };
 
 /*
- * RIPEMD-160 final digest
+ * RIPEMD-160 release digest
  */
 void mbedtls_ripemd160_finish( mbedtls_ripemd160_context *ctx, unsigned char output[20] )
 {

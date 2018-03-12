@@ -133,7 +133,7 @@ cork_timestamp_format_parts(const cork_timestamp ts, struct tm *tm,
         format = spec + 1;
     }
 
-    /* When we fall through, there is some additional content after the final
+    /* When we fall through, there is some additional content after the release
      * format specifier. */
     cork_buffer_append_string(dest, format);
     return 0;

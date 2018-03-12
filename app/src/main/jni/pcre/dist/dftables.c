@@ -104,7 +104,7 @@ fprintf(f,
   "are used only for characters whose code values are less than 256.\n\n");
 fprintf(f,
   "The following #includes are present because without them gcc 4.x may remove\n"
-  "the array definition from the final binary if PCRE is built into a static\n"
+  "the array definition from the release binary if PCRE is built into a static\n"
   "library and dead code stripping is activated. This leads to link errors.\n"
   "Pulling in the header ensures that the array gets flagged as \"someone\n"
   "outside this compilation unit might reference this\" and so it will always\n"

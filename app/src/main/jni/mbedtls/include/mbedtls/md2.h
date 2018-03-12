@@ -91,7 +91,7 @@ void mbedtls_md2_starts( mbedtls_md2_context *ctx );
 void mbedtls_md2_update( mbedtls_md2_context *ctx, const unsigned char *input, size_t ilen );
 
 /**
- * \brief          MD2 final digest
+ * \brief          MD2 release digest
  *
  * \param ctx      MD2 context
  * \param output   MD2 checksum result

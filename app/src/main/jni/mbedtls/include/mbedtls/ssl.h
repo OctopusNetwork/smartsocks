@@ -499,7 +499,7 @@ typedef int mbedtls_ssl_recv_timeout_t( void *ctx,
  *                 return correct information.
  *
  * \note           If using a event-driven style of programming, an event must
- *                 be generated when the final delay is passed. The event must
+ *                 be generated when the release delay is passed. The event must
  *                 cause a call to \c mbedtls_ssl_handshake() with the proper
  *                 SSL context to be scheduled. Care must be taken to ensure
  *                 that at most one such call happens at a time.
@@ -521,7 +521,7 @@ typedef void mbedtls_ssl_set_timer_t( void * ctx,
  *                 -1 if cancelled (fin_ms == 0),
  *                  0 if none of the delays have passed,
  *                  1 if only the intermediate delay has passed,
- *                  2 if the final delay has passed.
+ *                  2 if the release delay has passed.
  */
 typedef int mbedtls_ssl_get_timer_t( void * ctx );
 

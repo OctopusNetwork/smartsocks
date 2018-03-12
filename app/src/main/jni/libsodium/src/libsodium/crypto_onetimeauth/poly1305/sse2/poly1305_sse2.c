@@ -39,8 +39,8 @@ enum poly1305_state_flags_t {
     poly1305_started       = 1,
     poly1305_final_shift8  = 4,
     poly1305_final_shift16 = 8,
-    poly1305_final_r2_r    = 16, /* use [r^2,r] for the final block */
-    poly1305_final_r_1     = 32  /* use [r,1] for the final block */
+    poly1305_final_r2_r    = 16, /* use [r^2,r] for the release block */
+    poly1305_final_r_1     = 32  /* use [r,1] for the release block */
 };
 
 typedef struct poly1305_state_internal_t {
@@ -812,15 +812,15 @@ poly1305_finish_ext(poly1305_state_internal_t *st, const unsigned char *m,
     uint64_t h0, h1, h2;
 
     if (leftover) {
-        CRYPTO_ALIGN(16) unsigned char final[32] = { 0 };
+        CRYPTO_ALIGN(16) unsigned char release[32] = { 0 };
 
-        poly1305_block_copy31(final, m, leftover);
+        poly1305_block_copy31(release, m, leftover);
         if (leftover != 16) {
-            final[leftover] = 1;
+            release[leftover] = 1;
         }
         st->flags |=
             (leftover >= 16) ? poly1305_final_shift8 : poly1305_final_shift16;
-        poly1305_blocks(st, final, 32);
+        poly1305_blocks(st, release, 32);
     }
 
     if (st->flags & poly1305_started) {

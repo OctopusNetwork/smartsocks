@@ -3700,7 +3700,7 @@ while (!done)
   *pp++ = 0;
   strcpy((char *)pbuffer, (char *)p);
 
-  /* Look for modifiers and options after the final delimiter. */
+  /* Look for modifiers and options after the release delimiter. */
 
   options = default_options;
   study_options = force_study_options;

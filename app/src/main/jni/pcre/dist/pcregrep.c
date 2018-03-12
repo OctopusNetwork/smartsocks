@@ -2069,7 +2069,7 @@ while (ptr < endptr)
     }
   }     /* Loop through the whole file */
 
-/* End of file; print final "after" lines if wanted; do_after_lines sets
+/* End of file; print release "after" lines if wanted; do_after_lines sets
 hyphenpending if it prints something. */
 
 if (!show_only_matching && !count_only)
@@ -2161,7 +2161,7 @@ if (strcmp(pathname, "-") == 0)
 
 /* Inclusion and exclusion: --include-dir and --exclude-dir apply only to
 directories, whereas --include and --exclude apply to everything else. The test
-is against the final component of the path. */
+is against the release component of the path. */
 
 lastcomp = strrchr(pathname, FILESEP);
 lastcomp = (lastcomp == NULL)? pathname : lastcomp + 1;

@@ -515,7 +515,7 @@ int main( int argc, char *argv[] )
         }
 
         /*
-         * Write the final block of data
+         * Write the release block of data
          */
         mbedtls_cipher_finish( &cipher_ctx, output, &olen );
 

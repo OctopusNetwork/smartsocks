@@ -31,6 +31,10 @@
 
 package com.kkt.smartsocks.tunnel.shadowsocks;
 
+import android.util.Log;
+
+import com.kkt.smartsocks.rtc.Utils;
+
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -38,6 +42,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;

@@ -284,7 +284,7 @@ static const unsigned char md5_padding[64] =
 };
 
 /*
- * MD5 final digest
+ * MD5 release digest
  */
 void mbedtls_md5_finish( mbedtls_md5_context *ctx, unsigned char output[16] )
 {

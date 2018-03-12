@@ -7,12 +7,12 @@ import java.nio.channels.SocketChannel;
 
 public class RawTunnel extends Tunnel {
 
-    public RawTunnel(InetSocketAddress serverAddress, Selector selector) throws Exception {
-        super(serverAddress, selector);
+    public RawTunnel(InetSocketAddress serverAddress, Selector selector, int role) throws Exception {
+        super(serverAddress, selector, role);
     }
 
-    public RawTunnel(SocketChannel innerChannel, Selector selector) {
-        super(innerChannel, selector);
+    public RawTunnel(SocketChannel innerChannel, Selector selector, int role) {
+        super(innerChannel, selector, role);
         // TODO Auto-generated constructor stub
     }
 
@@ -28,7 +28,7 @@ public class RawTunnel extends Tunnel {
     }
 
     @Override
-    protected void afterReceived(ByteBuffer buffer) throws Exception {
+    public void afterReceived(ByteBuffer buffer) throws Exception {
         // TODO Auto-generated method stub
 
     }

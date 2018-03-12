@@ -48,7 +48,7 @@ struct mbedtls_cmac_context_t
     unsigned char       state[MBEDTLS_CIPHER_BLKSIZE_MAX];
 
     /** Unprocessed data - either data that was not block aligned and is still
-     *  pending to be processed, or the final block */
+     *  pending to be processed, or the release block */
     unsigned char       unprocessed_block[MBEDTLS_CIPHER_BLKSIZE_MAX];
 
     /** Length of data pending to be processed */

@@ -80,7 +80,7 @@ cork_ipv4_parse(struct cork_ipv4 *addr, const char *str)
     }
 
     /* If we have a valid octet at the end, and that would be the fourth octet,
-     * then we've got a valid final parse. */
+     * then we've got a valid release parse. */
     DEBUG("%2u:\t", (unsigned int) (ch-str));
     if (CORK_LIKELY(seen_digit_in_octet && octets == 3)) {
 #if CORK_IP_ADDRESS_DEBUG
@@ -283,7 +283,7 @@ cork_ipv6_init(struct cork_ipv6 *addr, const char *str)
 
     /* If we have a valid hextet at the end, and we've either seen a
      * double-colon, or we have eight hextets in total, then we've got a valid
-     * final parse. */
+     * release parse. */
     DEBUG("%2u:\t", (unsigned int) (ch-str));
     if (CORK_LIKELY(digits_seen > 0)) {
         /* If there are trailing digits that would form a ninth hextet

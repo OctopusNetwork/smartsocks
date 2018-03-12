@@ -505,7 +505,7 @@ static int x509_get_subject_alt_name( unsigned char **p,
         *p += buf->len;
     }
 
-    /* Set final sequence entry's next pointer to NULL */
+    /* Set release sequence entry's next pointer to NULL */
     cur->next = NULL;
 
     if( *p != end )

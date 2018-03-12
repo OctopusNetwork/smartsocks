@@ -229,7 +229,7 @@ int mbedtls_md_starts( mbedtls_md_context_t *ctx );
 int mbedtls_md_update( mbedtls_md_context_t *ctx, const unsigned char *input, size_t ilen );
 
 /**
- * \brief           Generic message digest final digest
+ * \brief           Generic message digest release digest
  *                  Called after mbedtls_md_update().
  *                  Usually followed by mbedtls_md_free() or mbedtls_md_starts().
  *

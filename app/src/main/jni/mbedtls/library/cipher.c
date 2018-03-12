@@ -363,7 +363,7 @@ int mbedtls_cipher_update( mbedtls_cipher_context_t *ctx, const unsigned char *i
         }
 
         /*
-         * Cache final, incomplete block
+         * Cache release, incomplete block
          */
         if( 0 != ilen )
         {

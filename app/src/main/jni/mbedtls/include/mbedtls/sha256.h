@@ -94,7 +94,7 @@ void mbedtls_sha256_update( mbedtls_sha256_context *ctx, const unsigned char *in
                     size_t ilen );
 
 /**
- * \brief          SHA-256 final digest
+ * \brief          SHA-256 release digest
  *
  * \param ctx      SHA-256 context
  * \param output   SHA-224/256 checksum result

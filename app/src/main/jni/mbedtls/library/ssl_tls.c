@@ -2960,7 +2960,7 @@ static int ssl_reassemble_dtls_handshake( mbedtls_ssl_context *ssl )
             return( MBEDTLS_ERR_SSL_ALLOC_FAILED );
         }
 
-        /* Prepare final header: copy msg_type, length and message_seq,
+        /* Prepare release header: copy msg_type, length and message_seq,
          * then add standardised fragment_offset and fragment_length */
         memcpy( ssl->handshake->hs_msg, ssl->in_msg, 6 );
         memset( ssl->handshake->hs_msg + 6, 0, 3 );
@@ -3012,7 +3012,7 @@ static int ssl_reassemble_dtls_handshake( mbedtls_ssl_context *ssl )
 
     /*
      * Do we have the complete message by now?
-     * If yes, final it, else ask to read the next record.
+     * If yes, release it, else ask to read the next record.
      */
     if( ssl_bitmask_check( bitmask, msg_len ) != 0 )
     {
@@ -5141,7 +5141,7 @@ static void ssl_calc_finished_tls_sha384(
 
 static void ssl_handshake_wrapup_free_hs_transform( mbedtls_ssl_context *ssl )
 {
-    MBEDTLS_SSL_DEBUG_MSG( 3, ( "=> handshake wrapup: final free" ) );
+    MBEDTLS_SSL_DEBUG_MSG( 3, ( "=> handshake wrapup: release free" ) );
 
     /*
      * Free our handshake params
@@ -5161,7 +5161,7 @@ static void ssl_handshake_wrapup_free_hs_transform( mbedtls_ssl_context *ssl )
     ssl->transform = ssl->transform_negotiate;
     ssl->transform_negotiate = NULL;
 
-    MBEDTLS_SSL_DEBUG_MSG( 3, ( "<= handshake wrapup: final free" ) );
+    MBEDTLS_SSL_DEBUG_MSG( 3, ( "<= handshake wrapup: release free" ) );
 }
 
 void mbedtls_ssl_handshake_wrapup( mbedtls_ssl_context *ssl )

@@ -316,7 +316,7 @@ static const unsigned char sha1_padding[64] =
 };
 
 /*
- * SHA-1 final digest
+ * SHA-1 release digest
  */
 void mbedtls_sha1_finish( mbedtls_sha1_context *ctx, unsigned char output[20] )
 {

@@ -121,14 +121,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/debug/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/jni" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/assets" type="java-test-resource" />
@@ -137,6 +129,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/jni" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testDebug/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/jni" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTestDebug/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/res" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/assets" type="java-resource" />
@@ -176,6 +176,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/instant-run-support" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/javaPrecompile" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
+      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/lint" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/prebuild" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/reload-dex" />
@@ -198,6 +199,7 @@
     <orderEntry type="library" name="org.jetbrains.kotlinx:kotlinx-coroutines-android:0.15@jar" level="project" />
     <orderEntry type="library" name="com.journeyapps:zxing-android-embedded-3.5.0" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.12@jar" level="project" />
+    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks/app/libs/base_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.android.support:support-core-ui-25.1.0" level="project" />
     <orderEntry type="library" name="com.android.support:support-media-compat-25.1.0" level="project" />
     <orderEntry type="library" name="com.android.volley:volley-1.1.0" level="project" />
@@ -207,7 +209,6 @@
     <orderEntry type="library" name="com.android.support:support-v4-25.1.0" level="project" />
     <orderEntry type="library" name="com.google.code.gson:gson:2.8.2@jar" level="project" />
     <orderEntry type="library" name="com.android.support:support-fragment-25.1.0" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/rtcdatachanneldemo/app/libs/base_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="org.hamcrest:hamcrest-core:1.3@jar" level="project" />
     <orderEntry type="library" name="com.android.support:support-core-utils-25.1.0" level="project" />
     <orderEntry type="library" name="io.reactivex.rxjava2:rxandroid-2.0.1" level="project" />
@@ -215,12 +216,12 @@
     <orderEntry type="library" name="com.futuremind.recyclerfastscroll:fastscroll-0.2.5" level="project" />
     <orderEntry type="library" name="com.android.support:appcompat-v7-25.1.0" level="project" />
     <orderEntry type="library" name="org.jetbrains.kotlin:kotlin-stdlib:1.2.21@jar" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/rtcdatachanneldemo/app/libs/audio_device_java.jar:unspecified@jar" level="project" />
+    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks/app/libs/libjingle_peerconnection_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.android.support:support-compat-25.1.0" level="project" />
+    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks/app/libs/audio_device_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.google.zxing:core:3.3.0@jar" level="project" />
     <orderEntry type="library" name="io.reactivex.rxjava2:rxjava:2.0.1@jar" level="project" />
     <orderEntry type="library" name="org.reactivestreams:reactive-streams:1.0.0@jar" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/rtcdatachanneldemo/app/libs/libjingle_peerconnection_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="org.jetbrains:annotations:13.0@jar" level="project" />
     <orderEntry type="library" name="com.android.support:recyclerview-v7-25.1.0" level="project" />
     <orderEntry type="library" name="org.jetbrains.kotlinx:kotlinx-coroutines-core:0.15@jar" level="project" />

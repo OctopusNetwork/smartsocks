@@ -178,7 +178,7 @@ void mbedtls_md2_update( mbedtls_md2_context *ctx, const unsigned char *input, s
 }
 
 /*
- * MD2 final digest
+ * MD2 release digest
  */
 void mbedtls_md2_finish( mbedtls_md2_context *ctx, unsigned char output[16] )
 {

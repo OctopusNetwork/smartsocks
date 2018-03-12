@@ -53,7 +53,7 @@ unsigned int murmurhash2(const void * key, int len, const unsigned int seed)
 	        h *= m;
 	};
 
-	// Do a few final mixes of the hash to ensure the last few
+	// Do a few release mixes of the hash to ensure the last few
 	// bytes are well-incorporated.
 
 	h ^= h >> 13;

@@ -2,6 +2,7 @@ package com.kkt.smartsocks.core;
 
 import com.kkt.smartsocks.tcpip.CommonMethods;
 import com.kkt.smartsocks.tunnel.Tunnel;
+import com.kkt.smartsocks.tunnel.datagram.DatagramTunnel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,6 +20,8 @@ public class TcpProxyServer implements Runnable {
     Selector m_Selector;
     ServerSocketChannel m_ServerSocketChannel;
     Thread m_ServerThread;
+
+    private static String TAG = "TCPProxyServer";
 
     public TcpProxyServer(int port) throws IOException {
         m_Selector = Selector.open();
@@ -61,7 +64,7 @@ public class TcpProxyServer implements Runnable {
     public void run() {
         try {
             while (true) {
-                m_Selector.select();
+                m_Selector.select(10);
                 Iterator<SelectionKey> keyIterator = m_Selector.selectedKeys().iterator();
                 while (keyIterator.hasNext()) {
                     SelectionKey key = keyIterator.next();
@@ -70,7 +73,13 @@ public class TcpProxyServer implements Runnable {
                             if (key.isReadable()) {
                                 ((Tunnel) key.attachment()).onReadable(key);
                             } else if (key.isWritable()) {
-                                ((Tunnel) key.attachment()).onWritable(key);
+                                if (ProxyConfig.Instance.enableRtcTunnel) {
+                                    DatagramTunnel.PendingLocalBuffer buffer =
+                                            (DatagramTunnel.PendingLocalBuffer) key.attachment();
+                                    buffer.mRemoteTunnel.onWritable(key);
+                                } else {
+                                    ((Tunnel) key.attachment()).onWritable(key);
+                                }
                             } else if (key.isConnectable()) {
                                 ((Tunnel) key.attachment()).onConnectable();
                             } else if (key.isAcceptable()) {
@@ -110,11 +119,11 @@ public class TcpProxyServer implements Runnable {
         Tunnel localTunnel = null;
         try {
             SocketChannel localChannel = m_ServerSocketChannel.accept();
-            localTunnel = TunnelFactory.wrap(localChannel, m_Selector);
+            localTunnel = TunnelFactory.wrap(localChannel, m_Selector, Tunnel.TUNNEL_ROLE_LOCAL);
 
             InetSocketAddress destAddress = getDestAddress(localChannel);
             if (destAddress != null) {
-                Tunnel remoteTunnel = TunnelFactory.createTunnelByConfig(destAddress, m_Selector);
+                Tunnel remoteTunnel = TunnelFactory.createTunnelByConfig(destAddress, m_Selector, Tunnel.TUNNEL_ROLE_REMOTE);
                 remoteTunnel.setBrotherTunnel(localTunnel);//关联兄弟
                 localTunnel.setBrotherTunnel(remoteTunnel);//关联兄弟
                 remoteTunnel.connect(destAddress);//开始连接

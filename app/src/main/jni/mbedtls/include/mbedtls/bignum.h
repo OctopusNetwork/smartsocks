@@ -361,7 +361,7 @@ int mbedtls_mpi_read_string( mbedtls_mpi *X, int radix, const char *s );
  * \param radix    Output numeric base
  * \param buf      Buffer to write the string to
  * \param buflen   Length of buf
- * \param olen     Length of the string written, including final NUL byte
+ * \param olen     Length of the string written, including release NUL byte
  *
  * \return         0 if successful, or a MBEDTLS_ERR_MPI_XXX error code.
  *                 *olen is always updated to reflect the amount

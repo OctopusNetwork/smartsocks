@@ -94,7 +94,7 @@ void mbedtls_sha512_update( mbedtls_sha512_context *ctx, const unsigned char *in
                     size_t ilen );
 
 /**
- * \brief          SHA-512 final digest
+ * \brief          SHA-512 release digest
  *
  * \param ctx      SHA-512 context
  * \param output   SHA-384/512 checksum result

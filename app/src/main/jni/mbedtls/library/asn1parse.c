@@ -279,7 +279,7 @@ int mbedtls_asn1_get_sequence_of( unsigned char **p,
         }
     }
 
-    /* Set final sequence entry's next pointer to NULL */
+    /* Set release sequence entry's next pointer to NULL */
     cur->next = NULL;
 
     if( *p != end )

@@ -974,7 +974,7 @@ int main( int argc, char *argv[] )
         }
         else if( strcmp( p, "default" ) != 0 )
         {
-            /* Leave room for a final NULL in curve list */
+            /* Leave room for a release NULL in curve list */
             while( i < CURVE_LIST_SIZE - 1 && *p != '\0' )
             {
                 q = p;
@@ -1024,7 +1024,7 @@ int main( int argc, char *argv[] )
         p = (char *) opt.alpn_string;
         i = 0;
 
-        /* Leave room for a final NULL in alpn_list */
+        /* Leave room for a release NULL in alpn_list */
         while( i < ALPN_LIST_SIZE - 1 && *p != '\0' )
         {
             alpn_list[i++] = p;

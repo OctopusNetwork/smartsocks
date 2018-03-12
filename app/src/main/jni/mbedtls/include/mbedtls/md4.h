@@ -91,7 +91,7 @@ void mbedtls_md4_starts( mbedtls_md4_context *ctx );
 void mbedtls_md4_update( mbedtls_md4_context *ctx, const unsigned char *input, size_t ilen );
 
 /**
- * \brief          MD4 final digest
+ * \brief          MD4 release digest
  *
  * \param ctx      MD4 context
  * \param output   MD4 checksum result

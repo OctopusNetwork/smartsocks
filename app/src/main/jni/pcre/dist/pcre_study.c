@@ -981,7 +981,7 @@ do
 
       /* If we hit ALT or KET, it means we haven't found anything mandatory in
       this branch, though we might have found something optional. For ALT, we
-      continue with the next alternative, but we have to arrange that the final
+      continue with the next alternative, but we have to arrange that the release
       result from subpattern is SSB_CONTINUE rather than SSB_DONE. For KET,
       return SSB_CONTINUE: if this is the top level, that indicates failure,
       but after a nested subpattern, it causes scanning to continue. */

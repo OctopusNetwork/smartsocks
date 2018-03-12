@@ -394,7 +394,7 @@ typedef struct {
  * \param size      size of the buffer
  * \param oid       OID to translate
  *
- * \return          Length of the string written (excluding final NULL) or
+ * \return          Length of the string written (excluding release NULL) or
  *                  MBEDTLS_ERR_OID_BUF_TOO_SMALL in case of error
  */
 int mbedtls_oid_get_numeric_string( char *buf, size_t size, const mbedtls_asn1_buf *oid );

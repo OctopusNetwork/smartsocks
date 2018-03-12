@@ -92,7 +92,7 @@ void mbedtls_ripemd160_update( mbedtls_ripemd160_context *ctx,
                        const unsigned char *input, size_t ilen );
 
 /**
- * \brief          RIPEMD-160 final digest
+ * \brief          RIPEMD-160 release digest
  *
  * \param ctx      RIPEMD-160 context
  * \param output   RIPEMD-160 checksum result

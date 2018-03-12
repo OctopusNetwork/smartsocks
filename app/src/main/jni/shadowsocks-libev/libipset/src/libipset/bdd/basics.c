@@ -290,7 +290,7 @@ ipset_node_evaluate(const struct ipset_node_cache *cache, ipset_node_id node_id,
         }
     }
 
-    /* Once we find a terminal node, we've got the final result. */
+    /* Once we find a terminal node, we've got the release result. */
     DEBUG("Evaluated result is %u", ipset_terminal_value(curr_node_id));
     return ipset_terminal_value(curr_node_id);
 }

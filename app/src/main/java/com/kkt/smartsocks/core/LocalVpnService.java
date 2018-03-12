@@ -10,7 +10,6 @@ import android.net.VpnService;
 import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import com.kkt.smartsocks.R;
 import com.kkt.smartsocks.core.ProxyConfig.IPAddress;
@@ -25,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
@@ -55,6 +55,8 @@ public class LocalVpnService extends VpnService implements Runnable {
     private Handler m_Handler;
     private long m_SentBytes;
     private long m_ReceivedBytes;
+
+    private static String TAG = "LocalVPNService";
 
     private static ArrayList<Integer> m_ProtectedSockets = new ArrayList<>();
 
@@ -211,7 +213,6 @@ public class LocalVpnService extends VpnService implements Runnable {
                         ProxyConfig.Instance.addProxyToList(ProxyUrl);
                         writeLog("Proxy is: %s", ProxyConfig.Instance.getDefaultProxy());
                     } catch (Exception e) {
-                        ;
                         String errString = e.getMessage();
                         if (errString == null || errString.isEmpty()) {
                             errString = e.toString();
@@ -475,6 +476,12 @@ public class LocalVpnService extends VpnService implements Runnable {
             Instance.protect(socket);
         } else {
             m_ProtectedSockets.add(socket);
+        }
+    }
+
+    public static void protectSocket(Socket socket) {
+        if (null != Instance) {
+            Instance.protect(socket);
         }
     }
 }

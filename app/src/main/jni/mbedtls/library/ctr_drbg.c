@@ -211,7 +211,7 @@ static int block_cipher_df( unsigned char *output,
     }
 
     /*
-     * Do final encryption with reduced data
+     * Do release encryption with reduced data
      */
     mbedtls_aes_setkey_enc( &aes_ctx, tmp, MBEDTLS_CTR_DRBG_KEYBITS );
     iv = tmp + MBEDTLS_CTR_DRBG_KEYSIZE;

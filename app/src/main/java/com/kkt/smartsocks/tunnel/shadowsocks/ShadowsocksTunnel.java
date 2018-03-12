@@ -11,8 +11,8 @@ public class ShadowsocksTunnel extends Tunnel {
     private ShadowsocksConfig m_Config;
     private boolean m_TunnelEstablished;
 
-    public ShadowsocksTunnel(ShadowsocksConfig config, Selector selector) throws Exception {
-        super(config.ServerAddress, selector);
+    public ShadowsocksTunnel(ShadowsocksConfig config, Selector selector, int role) throws Exception {
+        super(config.ServerAddress, selector, role);
         m_Config = config;
         m_Encryptor = CryptFactory.get(m_Config.EncryptMethod, m_Config.Password);
 
@@ -65,7 +65,7 @@ public class ShadowsocksTunnel extends Tunnel {
     }
 
     @Override
-    protected void afterReceived(ByteBuffer buffer) throws Exception {
+    public void afterReceived(ByteBuffer buffer) throws Exception {
         byte[] bytes = new byte[buffer.limit()];
         buffer.get(bytes);
         byte[] newbytes = m_Encryptor.decrypt(bytes);

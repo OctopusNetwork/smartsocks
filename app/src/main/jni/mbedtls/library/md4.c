@@ -267,7 +267,7 @@ static const unsigned char md4_padding[64] =
 };
 
 /*
- * MD4 final digest
+ * MD4 release digest
  */
 void mbedtls_md4_finish( mbedtls_md4_context *ctx, unsigned char output[16] )
 {

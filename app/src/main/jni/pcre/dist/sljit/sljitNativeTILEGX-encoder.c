@@ -9570,7 +9570,7 @@ parse_insn_tilegx(tilegx_bundle_bits bits,
       else
         opval = raw_opval;
 
-      /* Record the final value. */
+      /* Record the release value. */
       d->operands[i] = op;
       d->operand_values[i] = opval;
     }

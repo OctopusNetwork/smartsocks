@@ -2533,7 +2533,7 @@ typedef struct match_data {
   BOOL   utf;                     /* UTF-8 / UTF-16 flag */
   BOOL   jscript_compat;          /* JAVASCRIPT_COMPAT flag */
   BOOL   use_ucp;                 /* PCRE_UCP flag */
-  BOOL   endonly;                 /* Dollar not before final \n */
+  BOOL   endonly;                 /* Dollar not before release \n */
   BOOL   notempty;                /* Empty string match not wanted */
   BOOL   notempty_atstart;        /* Empty string match at start not wanted */
   BOOL   hitend;                  /* Hit the end of the subject at some point */

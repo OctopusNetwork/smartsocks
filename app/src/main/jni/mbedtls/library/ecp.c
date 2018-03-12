@@ -1239,7 +1239,7 @@ static int ecp_precompute_comb( const mbedtls_ecp_group *grp,
 
     /*
      * Set T[0] = P and
-     * T[2^{l-1}] = 2^{dl} P for l = 1 .. w-1 (this is not the final value)
+     * T[2^{l-1}] = 2^{dl} P for l = 1 .. w-1 (this is not the release value)
      */
     MBEDTLS_MPI_CHK( mbedtls_ecp_copy( &T[0], P ) );
 

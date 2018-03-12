@@ -12,8 +12,8 @@ public class HttpConnectTunnel extends Tunnel {
     private boolean m_TunnelEstablished;
     private HttpConnectConfig m_Config;
 
-    public HttpConnectTunnel(HttpConnectConfig config, Selector selector) throws IOException {
-        super(config.ServerAddress, selector);
+    public HttpConnectTunnel(HttpConnectConfig config, Selector selector, int role) throws IOException {
+        super(config.ServerAddress, selector, role);
         m_Config = config;
     }
 
@@ -59,7 +59,7 @@ public class HttpConnectTunnel extends Tunnel {
     }
 
     @Override
-    protected void afterReceived(ByteBuffer buffer) throws Exception {
+    public void afterReceived(ByteBuffer buffer) throws Exception {
         if (!m_TunnelEstablished) {
             //收到代理服务器响应数据
             //分析响应并判断是否连接成功

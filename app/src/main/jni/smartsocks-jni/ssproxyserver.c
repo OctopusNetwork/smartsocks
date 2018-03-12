@@ -6,7 +6,7 @@ extern void vpn_interface_init(JNIEnv *env);
 extern void vpn_interface_final();
 
 JNIEXPORT jint JNICALL
-Java_com_kkt_smartsocks_SSProxyServer_SSProxyServerStart(JNIEnv *env, jobject instance, jint argc,
+Java_com_kkt_smartsocks_rtc_SSProxyServer_SSProxyServerStart(JNIEnv *env, jobject instance, jint argc,
                                                          jobject argv)
 {
     jclass classArrayList = (*env)->GetObjectClass(env, argv);
@@ -27,7 +27,7 @@ Java_com_kkt_smartsocks_SSProxyServer_SSProxyServerStart(JNIEnv *env, jobject in
 }
 
 JNIEXPORT jint JNICALL
-Java_com_kkt_smartsocks_SSProxyServer_SSProxyServerStop(JNIEnv *env, jobject instance)
+Java_com_kkt_smartsocks_rtc_SSProxyServer_SSProxyServerStop(JNIEnv *env, jobject instance)
 {
     ss_server_stop();
     vpn_interface_final();

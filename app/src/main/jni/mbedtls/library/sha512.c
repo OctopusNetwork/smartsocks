@@ -319,7 +319,7 @@ static const unsigned char sha512_padding[128] =
 };
 
 /*
- * SHA-512 final digest
+ * SHA-512 release digest
  */
 void mbedtls_sha512_finish( mbedtls_sha512_context *ctx, unsigned char output[64] )
 {

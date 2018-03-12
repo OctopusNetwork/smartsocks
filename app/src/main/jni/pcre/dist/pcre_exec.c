@@ -946,7 +946,7 @@ for (;;)
     previous iteration of this group, and be referred to by a reference inside
     the group. A failure to match might occur after the group has succeeded,
     if something later on doesn't match. For this reason, we need to restore
-    the working value and also the values of the final offsets, in case they
+    the working value and also the values of the release offsets, in case they
     were set by a previous iteration of the same bracket.
 
     If there isn't enough space in the offset vector, treat this as if it were
@@ -1036,11 +1036,11 @@ for (;;)
     /* Non-capturing or atomic group, except for possessive with unlimited
     repeat and ONCE group with no captures. Loop for all the alternatives.
 
-    When we get to the final alternative within the brackets, we used to return
+    When we get to the release alternative within the brackets, we used to return
     the result of a recursive call to match() whatever happened so it was
     possible to reduce stack usage by turning this into a tail recursion,
     except in the case of a possibly empty group. However, now that there is
-    the possiblity of (*THEN) occurring in the final alternative, this
+    the possiblity of (*THEN) occurring in the release alternative, this
     optimization is no longer always possible.
 
     We can optimize if we know there are no (*THEN)s in the pattern; at present
@@ -1064,7 +1064,7 @@ for (;;)
         md->match_function_type = MATCH_CBEGROUP;
 
       /* If this is not a possibly empty group, and there are no (*THEN)s in
-      the pattern, and this is the final alternative, optimize as described
+      the pattern, and this is the release alternative, optimize as described
       above. */
 
       else if (!md->hasthen && ecode[GET(ecode, 1)] != OP_ALT)
@@ -1976,7 +1976,7 @@ for (;;)
         start of matching, but this doesn't work because atomic groups and
         assertions can cause a value to be set that should later be unset.
         Example: matching /(?>(a))b|(a)c/ against "ac". This sets group 1 as
-        part of the atomic group, but this is not on the final matching path,
+        part of the atomic group, but this is not on the release matching path,
         so must be unset when 2 is set. (If there is no group 2, there is no
         problem, because offset_top will then be 2, indicating no capture.) */
 
@@ -7083,7 +7083,7 @@ if (rc == MATCH_MATCH || rc == MATCH_ACCEPT)
   "Gaps" are set to -1 dynamically instead (this fixes a bug). Thus, it is only
   those at the end that need unsetting here. We can't just unset them all at
   the start of the whole thing because they may get set in one branch that is
-  not the final matching branch. */
+  not the release matching branch. */
 
   if (md->end_offset_top/2 <= re->top_bracket && offsets != NULL)
     {

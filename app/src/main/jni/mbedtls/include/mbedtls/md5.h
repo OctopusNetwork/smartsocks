@@ -91,7 +91,7 @@ void mbedtls_md5_starts( mbedtls_md5_context *ctx );
 void mbedtls_md5_update( mbedtls_md5_context *ctx, const unsigned char *input, size_t ilen );
 
 /**
- * \brief          MD5 final digest
+ * \brief          MD5 release digest
  *
  * \param ctx      MD5 context
  * \param output   MD5 checksum result

@@ -277,11 +277,11 @@ int mbedtls_cipher_cmac_update( mbedtls_cipher_context_t *ctx,
         cmac_ctx->unprocessed_len = 0;
     }
 
-    /* n is the number of blocks including any final partial block */
+    /* n is the number of blocks including any release partial block */
     n = ( ilen + block_size - 1 ) / block_size;
 
     /* Iterate across the input data in block sized chunks, excluding any
-     * final partial or complete block */
+     * release partial or complete block */
     for( j = 1; j < n; j++ )
     {
         cmac_xor_block( state, input, state, block_size );

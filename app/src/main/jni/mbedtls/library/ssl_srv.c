@@ -299,7 +299,7 @@ static int ssl_parse_supported_elliptic_curves( mbedtls_ssl_context *ssl,
     }
 
     /* Don't allow our peer to make us allocate too much memory,
-     * and leave room for a final 0 */
+     * and leave room for a release 0 */
     our_size = list_size / 2 + 1;
     if( our_size > MBEDTLS_ECP_DP_MAX )
         our_size = MBEDTLS_ECP_DP_MAX;

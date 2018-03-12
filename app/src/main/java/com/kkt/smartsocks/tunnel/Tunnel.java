@@ -2,6 +2,7 @@ package com.kkt.smartsocks.tunnel;
 
 import android.annotation.SuppressLint;
 
+import com.kkt.smartsocks.rtc.RtcInstance;
 import com.kkt.smartsocks.core.LocalVpnService;
 import com.kkt.smartsocks.core.ProxyConfig;
 
@@ -23,31 +24,46 @@ public abstract class Tunnel {
 
     protected abstract void beforeSend(ByteBuffer buffer) throws Exception;
 
-    protected abstract void afterReceived(ByteBuffer buffer) throws Exception;
+    public abstract void afterReceived(ByteBuffer buffer) throws Exception;
 
     protected abstract void onDispose();
 
-    private SocketChannel m_InnerChannel;
+    public SocketChannel m_InnerChannel;
     private ByteBuffer m_SendRemainBuffer;
-    private Selector m_Selector;
-    private Tunnel m_BrotherTunnel;
+    public Selector m_Selector;
+    public Tunnel m_BrotherTunnel;
     private boolean m_Disposed;
     private InetSocketAddress m_ServerEP;
     protected InetSocketAddress m_DestAddress;
 
-    public Tunnel(SocketChannel innerChannel, Selector selector) {
+    public static final int TUNNEL_ROLE_LOCAL = 0;
+    public static final int TUNNEL_ROLE_REMOTE = 1;
+    public int mRole = TUNNEL_ROLE_LOCAL;
+    private static String TAG = "Tunnel";
+
+    public RtcInstance m_RtcInstance;
+
+    public Tunnel(SocketChannel innerChannel, Selector selector, int role) {
         this.m_InnerChannel = innerChannel;
         this.m_Selector = selector;
+        mRole = role;
         SessionCount++;
     }
 
-    public Tunnel(InetSocketAddress serverAddress, Selector selector) throws IOException {
+    public Tunnel(InetSocketAddress serverAddress, Selector selector, int role) throws IOException {
         SocketChannel innerChannel = SocketChannel.open();
         innerChannel.configureBlocking(false);
+        this.m_ServerEP = serverAddress;
         this.m_InnerChannel = innerChannel;
         this.m_Selector = selector;
-        this.m_ServerEP = serverAddress;
+        mRole = role;
         SessionCount++;
+    }
+
+    public Tunnel(RtcInstance rtcInstance, int role) {
+        m_RtcInstance = rtcInstance;
+        SessionCount++;
+        mRole = role;
     }
 
     public void setBrotherTunnel(Tunnel brotherTunnel) {
@@ -64,7 +80,7 @@ public abstract class Tunnel {
         }
     }
 
-    protected void beginReceive() throws Exception {
+    public void beginReceive() throws Exception {
         if (m_InnerChannel.isBlocking()) {
             m_InnerChannel.configureBlocking(false);
         }
@@ -163,7 +179,7 @@ public abstract class Tunnel {
         disposeInternal(true);
     }
 
-    void disposeInternal(boolean disposeBrother) {
+    public void disposeInternal(boolean disposeBrother) {
         if (m_Disposed) {
             return;
         } else {

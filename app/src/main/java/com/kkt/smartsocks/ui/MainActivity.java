@@ -11,6 +11,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -29,11 +30,12 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.kkt.smartsocks.R;
-import com.kkt.smartsocks.SSProxyServer;
 import com.kkt.smartsocks.core.AppInfo;
 import com.kkt.smartsocks.core.AppProxyManager;
 import com.kkt.smartsocks.core.LocalVpnService;
 import com.kkt.smartsocks.core.ProxyConfig;
+import com.kkt.smartsocks.rtc.SSProxyServer;
+import com.kkt.smartsocks.tunnel.datagram.DatagramTunnel;
 
 import java.util.Calendar;
 
@@ -55,6 +57,12 @@ public class MainActivity extends Activity implements
     private ScrollView scrollViewLog;
     private TextView textViewProxyUrl, textViewProxyApp;
     private Calendar mCalendar;
+
+    private SSProxyServer mSSProxyServer;
+
+    private Handler mHandler = new Handler() {
+
+    };
 
     @SuppressLint("WrongViewCast")
     @Override
@@ -89,6 +97,11 @@ public class MainActivity extends Activity implements
             ((ViewGroup) findViewById(R.id.AppSelectLayout).getParent()).removeView(findViewById(R.id.AppSelectLayout));
             ((ViewGroup) findViewById(R.id.textViewAppSelectLine).getParent()).removeView(findViewById(R.id.textViewAppSelectLine));
         }
+
+        mSSProxyServer = new SSProxyServer(this);
+        mSSProxyServer.start();
+
+        DatagramTunnel.initGlobal(this);
     }
 
     String readProxyUrl() {
@@ -233,19 +246,40 @@ public class MainActivity extends Activity implements
         Toast.makeText(this, status, Toast.LENGTH_SHORT).show();
     }
 
+    private void startVPN() {
+        Intent intent = LocalVpnService.prepare(MainActivity.this);
+        if (intent == null) {
+            startVPNService();
+        } else {
+            startActivityForResult(intent, START_VPN_SERVICE_REQUEST_CODE);
+        }
+    }
+
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (LocalVpnService.IsRunning != isChecked) {
             switchProxy.setEnabled(false);
             if (isChecked) {
-                Intent intent = LocalVpnService.prepare(this);
-                if (intent == null) {
-                    startVPNService();
+                if (ProxyConfig.Instance.enableRtcTunnel) {
+                    DatagramTunnel.createPeerConnection(new DatagramTunnel.OnDatagramTunnelOpenListener() {
+                        @Override
+                        public void onDatagramTunnelOpen() {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startVPN();
+                                }
+                            });
+                        }
+                    });
                 } else {
-                    startActivityForResult(intent, START_VPN_SERVICE_REQUEST_CODE);
+                    startVPN();
                 }
             } else {
                 LocalVpnService.IsRunning = false;
+                if (ProxyConfig.Instance.enableRtcTunnel) {
+                    DatagramTunnel.destroyPeerConnection();
+                }
             }
         }
     }
@@ -387,7 +421,9 @@ public class MainActivity extends Activity implements
 
     @Override
     protected void onDestroy() {
+        DatagramTunnel.finalGlobal();
         LocalVpnService.removeOnStatusChangedListener(this);
+        mSSProxyServer.stop();
         super.onDestroy();
     }
 

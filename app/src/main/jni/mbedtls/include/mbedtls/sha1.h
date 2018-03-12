@@ -91,7 +91,7 @@ void mbedtls_sha1_starts( mbedtls_sha1_context *ctx );
 void mbedtls_sha1_update( mbedtls_sha1_context *ctx, const unsigned char *input, size_t ilen );
 
 /**
- * \brief          SHA-1 final digest
+ * \brief          SHA-1 release digest
  *
  * \param ctx      SHA-1 context
  * \param output   SHA-1 checksum result
