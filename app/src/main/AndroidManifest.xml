@@ -33,6 +33,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".rtc.RtcMainActivity" />
+
         <activity
             android:name=".ui.AppManager"
             android:label="@string/proxied_apps"

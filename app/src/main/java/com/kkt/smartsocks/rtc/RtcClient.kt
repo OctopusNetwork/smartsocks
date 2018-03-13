@@ -86,6 +86,7 @@ class RtcClient(context: Context,
             var str: String = "{\"candidate\":\"" + p0?.sdp + "\"," +
                     "\"sdpMLineIndex\":\"" + p0?.sdpMLineIndex + "\"," +
                     "\"sdpMid\":\"" + p0?.sdpMid + "\"}"
+            Log.d(TAG, "Send ice candidate to peer: " + str)
             mRtcClient.mRtcPeerServerSenderHelper?.
                     sendDataToPeer(str, mRtcClient.mRemotePeerId)
         }
@@ -131,13 +132,22 @@ class RtcClient(context: Context,
     private val mPeerObserver: PeerObserver = PeerObserver(this)
 
     fun init() {
-        mIceServers.add(PeerConnection.IceServer("stun:192.168.199.199:9999"))
+        mIceServers.add(PeerConnection.IceServer.builder(
+                "turn:47.254.28.11:3478?transport=udp")
+                .setUsername("kkt")
+                .setPassword("1qaz2wsx")
+                .setHostname("47.254.28.11")
+                .createIceServer())
+        mIceServers.add(PeerConnection.IceServer.builder(
+                "stun:47.254.28.11:3478").createIceServer())
         PeerConnectionFactory.initialize(
                 PeerConnectionFactory.InitializationOptions.builder(mContext)
                         .setFieldTrials("")
                         .setEnableVideoHwAcceleration(true)
+                        .setEnableInternalTracer(true)
                         .createInitializationOptions())
         mPeerConnectionFactory = PeerConnectionFactory.builder().createPeerConnectionFactory()
+        Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE)
     }
 
     fun release() {

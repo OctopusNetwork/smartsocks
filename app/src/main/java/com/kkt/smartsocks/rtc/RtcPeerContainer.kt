@@ -21,8 +21,8 @@ class RtcPeerContainer(context: Context,
                        peerMsgListener: RtcPeerMessageListener) {
     var mLocalPeerName: String = ""
     var mLocalPeerId: Long = -1
-    val mPeerServer: String = "192.168.198.180:8888"
-    val mPeerServerHost: String = "192.168.198.180"
+    val mPeerServer: String = "47.254.28.11:8888"
+    val mPeerServerHost: String = "47.254.28.11"
     val mPeerServerPort: Int = 8888
 
     var mPeerConnected = false

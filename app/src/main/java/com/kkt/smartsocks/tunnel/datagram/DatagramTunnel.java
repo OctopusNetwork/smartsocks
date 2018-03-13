@@ -318,7 +318,7 @@ public class DatagramTunnel extends Tunnel {
             Log.d(TAG, "Register connect event for " + senderConnId);
             channel.register(mSelector, SelectionKey.OP_CONNECT,
                     new PendingServerBuffer(body, channel, senderConnId));
-            channel.connect(new InetSocketAddress("192.168.198.180", 10993));
+            channel.connect(new InetSocketAddress("localhost", 10993));
             Log.d(TAG, "Connect to VPN server");
             return true;
         } catch (IOException e) {
