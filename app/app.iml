@@ -145,14 +145,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/shaders" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/jni" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/assets" type="java-test-resource" />
@@ -161,11 +153,18 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/jni" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/shaders" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/assets" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/aidl" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/jni" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/rs" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/androidTest/shaders" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/assets" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/blame" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/build-info" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/builds" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/check-manifest" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/cmake" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/incremental" />
@@ -176,7 +175,6 @@
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/instant-run-support" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/javaPrecompile" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/jniLibs" />
-      <excludeFolder url="file://$MODULE_DIR$/build/intermediates/lint" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/manifests" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/prebuild" />
       <excludeFolder url="file://$MODULE_DIR$/build/intermediates/reload-dex" />
@@ -199,9 +197,9 @@
     <orderEntry type="library" name="org.jetbrains.kotlinx:kotlinx-coroutines-android:0.15@jar" level="project" />
     <orderEntry type="library" name="com.journeyapps:zxing-android-embedded-3.5.0" level="project" />
     <orderEntry type="library" scope="TEST" name="junit:junit:4.12@jar" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks/app/libs/base_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.android.support:support-core-ui-25.1.0" level="project" />
     <orderEntry type="library" name="com.android.support:support-media-compat-25.1.0" level="project" />
+    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks-git/app/libs/libjingle_peerconnection_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.android.volley:volley-1.1.0" level="project" />
     <orderEntry type="library" name="com.android.support.constraint:constraint-layout-solver:1.0.2@jar" level="project" />
     <orderEntry type="library" name="com.android.support.constraint:constraint-layout-1.0.2" level="project" />
@@ -216,9 +214,9 @@
     <orderEntry type="library" name="com.futuremind.recyclerfastscroll:fastscroll-0.2.5" level="project" />
     <orderEntry type="library" name="com.android.support:appcompat-v7-25.1.0" level="project" />
     <orderEntry type="library" name="org.jetbrains.kotlin:kotlin-stdlib:1.2.21@jar" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks/app/libs/libjingle_peerconnection_java.jar:unspecified@jar" level="project" />
+    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks-git/app/libs/base_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.android.support:support-compat-25.1.0" level="project" />
-    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks/app/libs/audio_device_java.jar:unspecified@jar" level="project" />
+    <orderEntry type="library" name="__local_aars__:/home/owen/workspace/Source/local/smartsocks-git/app/libs/audio_device_java.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="com.google.zxing:core:3.3.0@jar" level="project" />
     <orderEntry type="library" name="io.reactivex.rxjava2:rxjava:2.0.1@jar" level="project" />
     <orderEntry type="library" name="org.reactivestreams:reactive-streams:1.0.0@jar" level="project" />

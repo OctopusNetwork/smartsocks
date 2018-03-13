@@ -91,7 +91,7 @@ public class DatagramTunnel extends Tunnel {
         }
     }
 
-    private static Thread mSocksAdapterThread = new Thread() {
+    static class SocksAdapterThread extends Thread {
         @Override
         public void run() {
             do {
@@ -161,8 +161,12 @@ public class DatagramTunnel extends Tunnel {
                     e.printStackTrace();
                 }
             } while (mRunning);
+
+            Log.d(TAG, "Socks adapter exit");
         }
-    };
+    }
+
+    private static SocksAdapterThread mSocksAdapterThread = null;
 
     class LocalTunnel {
         public Tunnel mLocalTunnel;
@@ -400,6 +404,7 @@ public class DatagramTunnel extends Tunnel {
     }
 
     public static void initGlobal(Context context) {
+        Log.d(TAG, "Initialize datagram tunnel");
         mRunning = true;
 
         mRtcInstance = new RtcInstance(context, new RtcPeerContainer.RtcPeerListListener() {
@@ -418,15 +423,19 @@ public class DatagramTunnel extends Tunnel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        mSocksAdapterThread = new SocksAdapterThread();
         mSocksAdapterThread.start();
     }
 
     public static void finalGlobal() {
+        Log.d(TAG, "Final datagram tunnel");
         mRtcInstance.release();
         mRunning = false;
         mSelector.wakeup();
         try {
+            Log.d(TAG, "Waiting for socks adapter exit");
             mSocksAdapterThread.join();
+            Log.d(TAG, "Socks adapter exit");
             mSelector.close();
         } catch (InterruptedException e) {
             e.printStackTrace();
