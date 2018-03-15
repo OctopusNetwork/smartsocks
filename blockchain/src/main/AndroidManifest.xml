@@ -1,0 +1,48 @@
+<manifest package="io.smarttangle.blockchain"
+          xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <application>
+
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name=".ui.MineActivity"
+            android:label="@string/mine">
+        </activity>
+
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name=".ui.LoginActivity"
+            android:label="@string/login">
+        </activity>
+
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name=".ui.RegisterActivity"
+            android:label="@string/register">
+        </activity>
+
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name=".ui.ProxyZonesActivity"
+            android:label="@string/zones">
+        </activity>
+
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name=".ui.ProxyServersActivity"
+            android:label="@string/services">
+        </activity>
+
+        <activity
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:name=".ui.TransactionActivity"
+            android:label="@string/transfer">
+        </activity>
+
+    </application>
+
+</manifest>

@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <stdint.h>
 
 extern int ss_server_main(int argc, char **argv);
 extern void ss_server_stop();

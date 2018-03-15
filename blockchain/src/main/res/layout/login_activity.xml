@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/content_margin"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please input address"
+        />
+
+    <EditText
+        android:id="@+id/evAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0x32addcfc500813297c274d524d6a60da2fb5ac5f"
+        />
+    <!--0x91b0356d07adcc775b40c5d39bd089e7f12b7565-->
+    <!--0x32addcfc500813297c274d524d6a60da2fb5ac5f-->
+    <!--0x35c58720cfe199efd16cfcc28c0e5eadd7384b30-->
+    <Button
+        android:id="@+id/btLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ok"
+        />
+
+</LinearLayout>

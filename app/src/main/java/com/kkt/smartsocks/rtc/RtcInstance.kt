@@ -8,10 +8,12 @@ import java.nio.ByteBuffer
  * Created by owen on 18-3-7.
  */
 class RtcInstance(context: Context,
-                  peerListListener: RtcPeerContainer.RtcPeerListListener) {
+                  peerListListener: RtcPeerContainer.RtcPeerListListener,
+                  peerName: String) {
     val mContext = context
     var mRtcPeerCon: RtcPeerContainer? = null
     var mRtcPeerMessageListener: RtcPeerMessageListener? = null
+    val mMyPeerName: String = peerName
 
     val mPeerListListener = peerListListener
 
@@ -37,7 +39,7 @@ class RtcInstance(context: Context,
     fun initialize() {
         mRtcPeerMessageListener = RtcPeerMessageListener(this)
         mRtcPeerCon = RtcPeerContainer(mContext,
-                mPeerListListener, mRtcPeerMessageListener!!)
+                mPeerListListener, mRtcPeerMessageListener!!, mMyPeerName)
 
         mRtcClient?.init()
         mRtcPeerCon!!.login()

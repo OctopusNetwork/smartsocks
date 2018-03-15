@@ -14,7 +14,7 @@ import java.util.*
 class RtcClient(context: Context,
                 peerServerSendHelper: RtcPeerServerSendHelper) {
     var mLocalPeerConnection: PeerConnection? = null
-    lateinit var mRemotePeerConnection: PeerConnection
+    var mRemotePeerConnection: PeerConnection? = null
 
     lateinit var mPeerConnectionFactory: PeerConnectionFactory
 
@@ -151,6 +151,7 @@ class RtcClient(context: Context,
     }
 
     fun release() {
+        destroyPeerConnection()
         mPeerConnectionFactory.dispose()
         PeerConnectionFactory.stopInternalTracingCapture()
         PeerConnectionFactory.shutdownInternalTracer()

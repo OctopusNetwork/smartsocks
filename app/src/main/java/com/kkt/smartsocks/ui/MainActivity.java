@@ -1,8 +1,8 @@
 package com.kkt.smartsocks.ui;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,9 +20,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -34,12 +37,32 @@ import com.kkt.smartsocks.core.AppInfo;
 import com.kkt.smartsocks.core.AppProxyManager;
 import com.kkt.smartsocks.core.LocalVpnService;
 import com.kkt.smartsocks.core.ProxyConfig;
+import com.kkt.smartsocks.rtc.PeerListAdapter;
+import com.kkt.smartsocks.rtc.RtcPeerContainer;
 import com.kkt.smartsocks.rtc.SSProxyServer;
+import com.kkt.smartsocks.rtc.Utils;
 import com.kkt.smartsocks.tunnel.datagram.DatagramTunnel;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 
-public class MainActivity extends Activity implements
+import io.smarttangle.blockchain.Utils.NetUtils;
+import io.smarttangle.blockchain.Utils.StorageKey;
+import io.smarttangle.blockchain.model.BCErrorEntity;
+import io.smarttangle.blockchain.model.BCRequest;
+import io.smarttangle.blockchain.model.PeerEntity;
+import io.smarttangle.blockchain.model.RPCEntity;
+import io.smarttangle.blockchain.model.ReceiptEntity;
+import io.smarttangle.blockchain.model.UserStorageUtils;
+import io.smarttangle.blockchain.ui.DialogUtils;
+import io.smarttangle.blockchain.ui.LoginActivity;
+import io.smarttangle.blockchain.ui.MineActivity;
+import io.smarttangle.blockchain.ui.ProxyZonesActivity;
+import io.smarttangle.blockchain.ui.TransactionActivity;
+
+public class MainActivity extends AppCompatActivity implements
         View.OnClickListener,
         OnCheckedChangeListener,
         LocalVpnService.onStatusChangedListener {
@@ -51,6 +74,7 @@ public class MainActivity extends Activity implements
     private static final String CONFIG_URL_KEY = "CONFIG_URL_KEY";
 
     private static final int START_VPN_SERVICE_REQUEST_CODE = 1985;
+    private static final int ACTIVITY_LOGIN_REQUEST_CODE = 1001;
 
     private Switch switchProxy;
     private TextView textViewLog;
@@ -59,10 +83,19 @@ public class MainActivity extends Activity implements
     private Calendar mCalendar;
 
     private SSProxyServer mSSProxyServer;
-
+    public String address;
+    public boolean isRegistProxy;
+    private int peerIndex;
+    private QueryRunnable queryRunnable = new QueryRunnable();
+    private Handler queryHandler = new Handler();
+    private Dialog loadingDialog;
     private Handler mHandler = new Handler() {
 
     };
+
+    private ListView mPeerListView;
+    private ArrayList<RtcPeerContainer.RtcPeer> mPeerList = new ArrayList<>();
+    private PeerListAdapter mPeerListAdapter;
 
     @SuppressLint("WrongViewCast")
     @Override
@@ -83,6 +116,21 @@ public class MainActivity extends Activity implements
             textViewProxyUrl.setText(ProxyUrl);
         }
 
+        mPeerListView = (ListView) findViewById(R.id.peerListView);
+        mPeerListAdapter = new PeerListAdapter(this, mPeerList);
+        mPeerListView.setAdapter(mPeerListAdapter);
+        mPeerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                peerIndex = i;
+                Intent intent;
+                intent = new Intent(MainActivity.this, TransactionActivity.class);
+                intent.putExtra(TransactionActivity.TO_ADDRESS, mPeerList.get(i).getName());
+                startActivity(intent);
+            }
+        });
+
+        GL_HISTORY_LOGS = "No online peers available\n";
         textViewLog.setText(GL_HISTORY_LOGS);
         scrollViewLog.fullScroll(ScrollView.FOCUS_DOWN);
 
@@ -90,7 +138,7 @@ public class MainActivity extends Activity implements
         LocalVpnService.addOnStatusChangedListener(this);
 
         //Pre-App Proxy
-        if (AppProxyManager.isLollipopOrAbove){
+        if (AppProxyManager.isLollipopOrAbove) {
             new AppProxyManager(this);
             textViewProxyApp = (TextView) findViewById(R.id.textViewAppSelectDetail);
         } else {
@@ -100,13 +148,14 @@ public class MainActivity extends Activity implements
 
         mSSProxyServer = new SSProxyServer(this);
         mSSProxyServer.start();
-
-        DatagramTunnel.initGlobal(this);
     }
 
+
     String readProxyUrl() {
-        SharedPreferences preferences = getSharedPreferences("shadowsocksProxyUrl", MODE_PRIVATE);
-        return preferences.getString(CONFIG_URL_KEY, "");
+
+        return "ss://aes-256-cfb:1qaz3wsx@192.168.0.1:10999";
+        //        SharedPreferences preferences = getSharedPreferences("shadowsocksProxyUrl", MODE_PRIVATE);
+        //        return preferences.getString(CONFIG_URL_KEY, "");
     }
 
     void setProxyUrl(String ProxyUrl) {
@@ -157,10 +206,10 @@ public class MainActivity extends Activity implements
             return;
         }
 
-        if (v.getTag().toString().equals("ProxyUrl")){
+        if (v.getTag().toString().equals("ProxyUrl")) {
             new AlertDialog.Builder(this)
                     .setTitle(R.string.config_url)
-                    .setItems(new CharSequence[]{
+                    .setItems(new CharSequence[] {
                             getString(R.string.config_url_scan),
                             getString(R.string.config_url_manual)
                     }, new OnClickListener() {
@@ -177,7 +226,7 @@ public class MainActivity extends Activity implements
                         }
                     })
                     .show();
-        } else if (v.getTag().toString().equals("AppSelect")){
+        } else if (v.getTag().toString().equals("AppSelect")) {
             System.out.println("abc");
             startActivity(new Intent(this, AppManager.class));
         }
@@ -240,8 +289,8 @@ public class MainActivity extends Activity implements
 
     @Override
     public void onStatusChanged(String status, Boolean isRunning) {
-        switchProxy.setEnabled(true);
-        switchProxy.setChecked(isRunning);
+        // switchProxy.setEnabled(true);
+        // switchProxy.setChecked(isRunning);
         onLogReceived(status);
         Toast.makeText(this, status, Toast.LENGTH_SHORT).show();
     }
@@ -261,17 +310,7 @@ public class MainActivity extends Activity implements
             switchProxy.setEnabled(false);
             if (isChecked) {
                 if (ProxyConfig.Instance.enableRtcTunnel) {
-                    DatagramTunnel.createPeerConnection(new DatagramTunnel.OnDatagramTunnelOpenListener() {
-                        @Override
-                        public void onDatagramTunnelOpen() {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    startVPN();
-                                }
-                            });
-                        }
-                    });
+
                 } else {
                     startVPN();
                 }
@@ -353,8 +392,23 @@ public class MainActivity extends Activity implements
         return true;
     }
 
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if (TextUtils.isEmpty(address)) {
+            MenuItem menuItem = menu.findItem(R.id.menu_item_account);
+            menuItem.setVisible(false);
+        } else {
+            MenuItem menuItem = menu.findItem(R.id.menu_item_login);
+            menuItem.setVisible(false);
+        }
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = null;
         switch (item.getItemId()) {
             case R.id.menu_item_about:
                 new AlertDialog.Builder(this)
@@ -364,7 +418,8 @@ public class MainActivity extends Activity implements
                         .setNegativeButton(R.string.btn_more, new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/dawei101/shadowsocks-android-java")));
+                                //                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github
+                                // .com/dawei101/shadowsocks-android-java")));
                             }
                         })
                         .show();
@@ -387,6 +442,9 @@ public class MainActivity extends Activity implements
                                 stopService(new Intent(MainActivity.this, LocalVpnService.class));
                                 System.runFinalization();
                                 System.exit(0);
+
+                                UserStorageUtils.removeObject(MainActivity.this, StorageKey.USER_ADDRESS);
+                                address = null;
                             }
                         })
                         .setNegativeButton(R.string.btn_cancel, null)
@@ -400,6 +458,23 @@ public class MainActivity extends Activity implements
                 } else {
                     onLogReceived("Proxy global mode is off");
                 }
+                return true;
+
+            case R.id.menu_item_login:
+                intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                return true;
+
+            case R.id.menu_item_account:
+                intent = new Intent(this, MineActivity.class);
+                startActivity(intent);
+                return true;
+
+            case R.id.menu_item_proxys:
+                intent = new Intent(this, ProxyZonesActivity.class);
+                startActivity(intent);
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -417,6 +492,54 @@ public class MainActivity extends Activity implements
                 textViewProxyApp.setText(tmpString);
             }
         }
+
+        //blockchains
+        {
+            address = UserStorageUtils.getObject(MainActivity.this, StorageKey.USER_ADDRESS);
+
+            if (!isRegistProxy) {
+                String ip = NetUtils.getLocalIp(this);
+
+                if (ip != null && address != null) {
+                    BCRequest.registerProxy(this, ip, address, new BCRequest.Listener<RPCEntity>() {
+                        @Override
+                        public void onResponse(RPCEntity response) {
+                            isRegistProxy = true;
+                            DatagramTunnel.initGlobal(MainActivity.this, new RtcPeerContainer.RtcPeerListListener() {
+                                @Override
+                                public void onUpdated(@NotNull ArrayList<RtcPeerContainer.RtcPeer> peerList) {
+                                    mPeerList.clear();
+                                    mPeerList.addAll(peerList);
+                                    BCRequest.getZonesProxys(MainActivity.this, "", new BCRequest.Listener<PeerEntity>() {
+                                        @Override
+                                        public void onResponse(PeerEntity peerEntity) {
+                                            mHandler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    mPeerListAdapter.updatePeerList(mPeerList);
+                                                    mPeerListAdapter.notifyDataSetChanged();
+                                                    textViewLog.append("" + mPeerList.size() + " online peers got\n");
+                                                }
+                                            });
+                                        }
+                                    }, null);
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            checkTransStatus();
+                                        }
+                                    });
+                                }
+                            }, address);
+                        }
+                    }, null);
+                }
+            }
+
+            this.supportInvalidateOptionsMenu();
+            checkTransStatus();
+        }
+
     }
 
     @Override
@@ -425,6 +548,91 @@ public class MainActivity extends Activity implements
         LocalVpnService.removeOnStatusChangedListener(this);
         mSSProxyServer.stop();
         super.onDestroy();
+
+        if (loadingDialog!=null) {
+            DialogUtils.closeDialog(loadingDialog);
+            loadingDialog = null;
+        }
     }
 
+
+    private void checkTransStatus() {
+        String txHash = UserStorageUtils.getObject(this, StorageKey.TX_HASH);
+
+        if (!TextUtils.isEmpty(txHash) && mPeerList.size() > 0) {
+            if (!LocalVpnService.IsRunning) {
+                DatagramTunnel.destroyPeerConnection();
+                DatagramTunnel.createPeerConnection(new DatagramTunnel.OnDatagramTunnelOpenListener() {
+                    @Override
+                    public void onDatagramTunnelOpen() {
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                startVPN();
+                            }
+                        });
+                    }
+                }, mPeerList.get(peerIndex));
+            }
+            if (switchProxy != null) {
+                switchProxy.setChecked(true);
+                switchProxy.setEnabled(false);
+            }
+//            if (loadingDialog == null) {
+//                runOnUiThread(new Runnable() {
+//                    public void run() {
+//                        loadingDialog = DialogUtils.createLoadingDialog(MainActivity.this, "Trade confirmation...");
+//                    }
+//                });
+//            }
+//            BCRequest.getReceiptInfo(this, txHash, new BCRequest.Listener<ReceiptEntity>() {
+//                @Override
+//                public void onResponse(ReceiptEntity receiptEntity) {
+//                    DatagramTunnel.destroyPeerConnection();
+//                    DatagramTunnel.createPeerConnection(new DatagramTunnel.OnDatagramTunnelOpenListener() {
+//                        @Override
+//                        public void onDatagramTunnelOpen() {
+//                            mHandler.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    startVPN();
+//                                }
+//                            });
+//                        }
+//                    }, mPeerList.get(peerIndex));
+//                    if (switchProxy != null) {
+//                        switchProxy.setChecked(true);
+//                        switchProxy.setEnabled(false);
+//                    }
+//                    DialogUtils.closeDialog(loadingDialog);
+//                }
+//            }, new BCRequest.ErrorListener() {
+//                @Override
+//                public void onError(BCErrorEntity error) {
+//                    if (error.getError().getCode().equals("-32000")) {
+//                        if (queryRunnable.getCount() < 10) {
+//                            queryHandler.postDelayed(queryRunnable, 3000);
+//                        } else {
+//                            Toast.makeText(MainActivity.this, "Network congestion, please confirm later !", Toast.LENGTH_LONG).show();
+//                            DialogUtils.closeDialog(loadingDialog);
+//                        }
+//                    }
+//                }
+//            });
+        }
+    }
+
+    private class QueryRunnable implements Runnable {
+        private int count;
+
+        public int getCount() {
+            return count;
+        }
+
+        @Override
+        public void run() {
+            count++;
+            checkTransStatus();
+        }
+    }
 }

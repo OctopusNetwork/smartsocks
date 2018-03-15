@@ -1,9 +1,22 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_item_switch"
-        android:showAsAction="always"
         android:title="@string/menu_item_switch"
-        android:actionViewClass="android.widget.Switch"></item>
+        app:showAsAction="always"
+        app:actionViewClass="android.widget.Switch"></item>
+
+    <item
+        android:id="@+id/menu_item_login"
+        android:title="@string/menu_item_login"></item>
+
+    <item
+        android:id="@+id/menu_item_account"
+        android:title="@string/menu_item_account"></item>
+
+    <item
+        android:id="@+id/menu_item_proxys"
+        android:title="@string/menu_item_proxys"></item>
 
     <item
         android:id="@+id/menu_item_toggle_global"

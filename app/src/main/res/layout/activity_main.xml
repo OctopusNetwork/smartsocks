@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:id="@+id/ProxyUrlLayout"
@@ -9,7 +10,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:tag="ProxyUrl"
-        android:padding="13dp">
+        android:padding="13dp"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/textViewProxyUrlTitle"
@@ -33,7 +35,8 @@
         android:background="@android:color/darker_gray"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:alpha="0.4" />
+        android:alpha="0.4"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:id="@+id/AppSelectLayout"
@@ -41,7 +44,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:tag="AppSelect"
-        android:padding="13dp">
+        android:padding="13dp"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/textViewAppSelectTitle"
@@ -66,7 +70,13 @@
         android:background="@android:color/darker_gray"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:alpha="0.4" />
+        android:alpha="0.4"
+        android:visibility="gone"/>
+
+    <ListView
+        android:id="@+id/peerListView"
+        android:layout_height="200dp"
+        android:layout_width="match_parent"/>
 
     <ScrollView
         android:id="@+id/scrollViewLog"
@@ -83,7 +93,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="13dp"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
 
         </LinearLayout>
     </ScrollView>
@@ -102,5 +112,6 @@
 
         <FrameLayout android:layout_column="14"></FrameLayout>
     </TableRow>
+
 
 </TableLayout>

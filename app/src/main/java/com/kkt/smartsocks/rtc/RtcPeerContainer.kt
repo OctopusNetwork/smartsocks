@@ -18,8 +18,9 @@ import java.net.Socket
  */
 class RtcPeerContainer(context: Context,
                        peerListListener: RtcPeerListListener,
-                       peerMsgListener: RtcPeerMessageListener) {
-    var mLocalPeerName: String = ""
+                       peerMsgListener: RtcPeerMessageListener,
+                       peerName: String) {
+    var mLocalPeerName: String = peerName
     var mLocalPeerId: Long = -1
     val mPeerServer: String = "47.254.28.11:8888"
     val mPeerServerHost: String = "47.254.28.11"
@@ -40,7 +41,7 @@ class RtcPeerContainer(context: Context,
     var mPeerClientThread: Thread? = null
 
     init {
-        mLocalPeerName = Utils.getWIFILocalIpAdress(mContext)
+        // mLocalPeerName = Utils.getWIFILocalIpAdress(mContext)
     }
 
     class RtcPeerListener(peerList: ArrayList<RtcPeer>,
@@ -106,9 +107,13 @@ class RtcPeerContainer(context: Context,
                 LocalVpnService.protectSocket(mPeerServerSock)
             }
             if (mPeerServerSock?.isConnected!!) {
-                mOutputStream = mPeerServerSock?.getOutputStream()
-                mOutputStream?.write(reqString.toByteArray())
-                mOutputStream?.flush()
+                try {
+                    mOutputStream = mPeerServerSock?.getOutputStream()
+                    mOutputStream?.write(reqString.toByteArray())
+                    mOutputStream?.flush()
+                } catch (excp: IOException) {
+                    excp.printStackTrace()
+                }
             }
         }.start()
     }
@@ -191,6 +196,8 @@ class RtcPeerContainer(context: Context,
 
     fun logout() {
         mLogout = true
+        peerServerGetRequest("/sign_out")
+        Thread.sleep(1000)
         mPeerServerSock?.close()
         mPeerServerSock = null
         mPeerClientThread?.join()
@@ -213,11 +220,13 @@ class RtcPeerContainer(context: Context,
         var name: String = ""
         var id: Long = -1
         var connected: Boolean = false
+        var address: String = ""
 
         init {
             val elems = peerDesc.split(",")
             if (elems . size >= 3) {
                 name = elems[0]
+                address = name
                 id = elems[1].toLong()
                 if (elems[2].trim().toInt() == 1) {
                     connected = true

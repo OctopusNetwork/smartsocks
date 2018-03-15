@@ -3,11 +3,10 @@ package com.kkt.smartsocks.tunnel.datagram;
 import android.content.Context;
 import android.util.Log;
 
+import com.kkt.smartsocks.core.LocalVpnService;
 import com.kkt.smartsocks.rtc.RtcClient;
 import com.kkt.smartsocks.rtc.RtcInstance;
 import com.kkt.smartsocks.rtc.RtcPeerContainer;
-import com.kkt.smartsocks.rtc.Utils;
-import com.kkt.smartsocks.core.LocalVpnService;
 import com.kkt.smartsocks.tunnel.Tunnel;
 import com.kkt.smartsocks.tunnel.shadowsocks.CryptFactory;
 import com.kkt.smartsocks.tunnel.shadowsocks.ICrypt;
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.Pipe;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -34,7 +32,6 @@ public class DatagramTunnel extends Tunnel {
     private static final String TAG = "DatagramTunnel";
 
     private static RtcInstance mRtcInstance;
-    private static ArrayList<RtcPeerContainer.RtcPeer> mPeerArray = new ArrayList<>();
     private static Boolean mPeerConnected = false;
     private static Boolean mSendDataChannelReady = false;
 
@@ -46,7 +43,6 @@ public class DatagramTunnel extends Tunnel {
 
     private static Selector mSelector;
     private static Semaphore mSemaphore = new Semaphore(1, true);
-    private static Boolean mRunning = false;
 
     private Boolean mDisposed = false;
 
@@ -92,6 +88,7 @@ public class DatagramTunnel extends Tunnel {
     }
 
     static class SocksAdapterThread extends Thread {
+        public Boolean mRunning = true;
         @Override
         public void run() {
             do {
@@ -161,8 +158,6 @@ public class DatagramTunnel extends Tunnel {
                     e.printStackTrace();
                 }
             } while (mRunning);
-
-            Log.d(TAG, "Socks adapter exit");
         }
     }
 
@@ -197,17 +192,14 @@ public class DatagramTunnel extends Tunnel {
 
     private static ArrayList<RemoteTunnel> mRemoteTunnelList = new ArrayList<>();
 
-    public static void createPeerConnection(OnDatagramTunnelOpenListener listener) {
+    public static void createPeerConnection(OnDatagramTunnelOpenListener listener, RtcPeerContainer.RtcPeer peer) {
         mOnDatagramTunnelOpenListener = listener;
         if (!mPeerConnected) {
-            if (mPeerArray.size() > 0) {
-                RtcPeerContainer.RtcPeer peer = mPeerArray.get(0);
-                if (peer.getConnected()) {
-                    Log.d(TAG, "Connect to peer: " + peer.getName() + "/" + peer.getId());
-                    mRtcInstance.connectToPeer(peer.getId());
-                    mRtcInstance.createDataChannel("DatagramChannel");
-                    mPeerConnected = true;
-                }
+            if (peer.getConnected()) {
+                Log.d(TAG, "Connect to peer: " + peer.getName() + "/" + peer.getId());
+                mRtcInstance.connectToPeer(peer.getId());
+                mRtcInstance.createDataChannel("DatagramChannel");
+                mPeerConnected = true;
             }
         }
     }
@@ -266,21 +258,27 @@ public class DatagramTunnel extends Tunnel {
 
         Log.d(TAG, "Resp to: " + senderConnId);
 
-        for (LocalTunnel localTunnel : mLocalTunnelList) {
-            if (senderConnId == localTunnel.mLocalTunnel.m_InnerChannel.socket().getPort()) {
-                try {
-                    Log.d(TAG, "Resp to: " + senderConnId +
-                            "/" + localTunnel.mLocalTunnel.m_InnerChannel.socket().getPort() +
-                            "/" + localTunnel.mLocalTunnel.m_InnerChannel.socket().getLocalPort());
-                    localTunnel.mRemoteTunnel.afterReceived(body);
-                    localTunnel.mLocalTunnel.m_InnerChannel.write(body);
-                } catch (ClosedChannelException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
+        try {
+            mSemaphore.acquire();
+            for (LocalTunnel localTunnel : mLocalTunnelList) {
+                if (senderConnId == localTunnel.mLocalTunnel.m_InnerChannel.socket().getPort()) {
+                    try {
+                        Log.d(TAG, "Resp to: " + senderConnId +
+                                "/" + localTunnel.mLocalTunnel.m_InnerChannel.socket().getPort() +
+                                "/" + localTunnel.mLocalTunnel.m_InnerChannel.socket().getLocalPort());
+                        localTunnel.mRemoteTunnel.afterReceived(body);
+                        localTunnel.mLocalTunnel.m_InnerChannel.write(body);
+                    } catch (ClosedChannelException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
                 }
-                break;
             }
+            mSemaphore.release();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -337,15 +335,21 @@ public class DatagramTunnel extends Tunnel {
 
         Log.d(TAG, "Resp connect to: " + senderConnId);
 
-        for (LocalTunnel localTunnel : mLocalTunnelList) {
-            if (senderConnId == localTunnel.mLocalTunnel.m_InnerChannel.socket().getPort()) {
-                try {
-                    localTunnel.mLocalTunnel.beginReceive();
-                } catch (Exception e) {
-                    e.printStackTrace();
+        try {
+            mSemaphore.acquire();
+            for (LocalTunnel localTunnel : mLocalTunnelList) {
+                if (senderConnId == localTunnel.mLocalTunnel.m_InnerChannel.socket().getPort()) {
+                    try {
+                        localTunnel.mLocalTunnel.beginReceive();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
                 }
-                break;
             }
+            mSemaphore.release();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         return true;
@@ -403,17 +407,8 @@ public class DatagramTunnel extends Tunnel {
         }
     }
 
-    public static void initGlobal(Context context) {
-        Log.d(TAG, "Initialize datagram tunnel");
-        mRunning = true;
-
-        mRtcInstance = new RtcInstance(context, new RtcPeerContainer.RtcPeerListListener() {
-            @Override
-            public void onUpdated(@NotNull ArrayList<RtcPeerContainer.RtcPeer> peerList) {
-                mPeerArray.clear();
-                mPeerArray.addAll(peerList);
-            }
-        });
+    public static void initGlobal(Context context, RtcPeerContainer.RtcPeerListListener listener, String peerName) {
+        mRtcInstance = new RtcInstance(context, listener, peerName);
         mRtcInstance.setSendDataChannelListener(mSendDataChannelListener);
         mRtcInstance.setRecvDataChannelListener(mRecvDataChannelListener);
         mRtcInstance.initialize();
@@ -428,14 +423,11 @@ public class DatagramTunnel extends Tunnel {
     }
 
     public static void finalGlobal() {
-        Log.d(TAG, "Final datagram tunnel");
         mRtcInstance.release();
-        mRunning = false;
+        mSocksAdapterThread.mRunning = false;
         mSelector.wakeup();
         try {
-            Log.d(TAG, "Waiting for socks adapter exit");
             mSocksAdapterThread.join();
-            Log.d(TAG, "Socks adapter exit");
             mSelector.close();
         } catch (InterruptedException e) {
             e.printStackTrace();

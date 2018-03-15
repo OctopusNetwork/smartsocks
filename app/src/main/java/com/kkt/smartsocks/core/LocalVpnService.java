@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.smarttangle.blockchain.model.BCRequest;
+
 public class LocalVpnService extends VpnService implements Runnable {
 
     public static LocalVpnService Instance = null;
@@ -69,7 +71,7 @@ public class LocalVpnService extends VpnService implements Runnable {
         m_UDPHeader = new UDPHeader(m_Packet, 20);
         m_DNSBuffer = ((ByteBuffer) ByteBuffer.wrap(m_Packet).position(28)).slice();
         Instance = this;
-
+        BCRequest.setVpnService(Instance);
         System.out.printf("New VPNService(%d)\n", ID);
 
         for (Integer socket : m_ProtectedSockets) {
@@ -469,6 +471,7 @@ public class LocalVpnService extends VpnService implements Runnable {
         if (m_VPNThread != null) {
             m_VPNThread.interrupt();
         }
+        BCRequest.setVpnService(null);
     }
 
     public static void protectSocket(int socket) {

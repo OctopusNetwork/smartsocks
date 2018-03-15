@@ -9,7 +9,10 @@ import android.widget.Button;
 import com.kkt.smartsocks.R;
 import com.kkt.smartsocks.tunnel.datagram.DatagramTunnel;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 /**
  * Created by owen on 18-3-11.
@@ -33,7 +36,12 @@ public class DTMainActivity extends AppCompatActivity {
                     DatagramTunnel.finalGlobal();
                     btn.setText("DTInit: CLOSE");
                 } else {
-                    DatagramTunnel.initGlobal(DTMainActivity.this);
+                    DatagramTunnel.initGlobal(DTMainActivity.this, new RtcPeerContainer.RtcPeerListListener() {
+                        @Override
+                        public void onUpdated(@NotNull ArrayList<RtcPeerContainer.RtcPeer> peerList) {
+
+                        }
+                    },Utils.Companion.getWIFILocalIpAdress(DTMainActivity.this));
                     btn.setText("DTInit: OPEN");
                 }
             }
@@ -59,7 +67,7 @@ public class DTMainActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
-                    });
+                    }, null);
                     btn2.setText("DTConn: OPEN");
                 }
             }

@@ -3,6 +3,7 @@
 //
 
 #include <jni.h>
+#include <stdint.h>
 
 static JNIEnv *g_env = NULL;
 
