@@ -1,1 +1,1 @@
-include ':app', ':blockchain'
+include ':app', ':rtc', ':ssserver'

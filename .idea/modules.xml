@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rtc/rtc.iml" filepath="$PROJECT_DIR$/rtc/rtc.iml" />
       <module fileurl="file://$PROJECT_DIR$/smartsocks.iml" filepath="$PROJECT_DIR$/smartsocks.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ssserver/ssserver.iml" filepath="$PROJECT_DIR$/ssserver/ssserver.iml" />
     </modules>
   </component>
 </project>
