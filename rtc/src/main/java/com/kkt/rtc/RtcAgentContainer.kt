@@ -10,6 +10,11 @@ import java.nio.ByteBuffer
 class RtcAgentContainer {
     companion object {
         var mRtcAgentMap: HashMap<String, RtcAgent> = HashMap()
+        var mRtcSocketProtectListener: RtcAgent.RtcSocketProtectListener? = null
+
+        fun setRtcSocketProtectListener(listener: RtcAgent.RtcSocketProtectListener) {
+            mRtcSocketProtectListener = listener
+        }
 
         fun processMessage(msg: String?,
                            context: Context?,
@@ -54,6 +59,7 @@ class RtcAgentContainer {
                     }
                     rtcAgent = RtcAgent(context, signallingSender,
                             sendDataChannelListener, recvDataChannelListener,
+                            mRtcSocketProtectListener,
                             sourceid, config)
                     rtcAgent.initialize(sourceid, RtcAgent.RtcRole.RTC_ACCEPTOR)
                     mRtcAgentMap[sourceid] = rtcAgent
@@ -104,6 +110,7 @@ class RtcAgentContainer {
             }
             var rtcAgent = RtcAgent(context, signallingSender,
                     sendDataChannelListener, recvDataChannelListener,
+                    mRtcSocketProtectListener,
                     peer?.mPeerID!!, config)
             rtcAgent.initialize(peer.mPeerID, RtcAgent.RtcRole.RTC_INITIATOR)
             mRtcAgentMap[peer.mPeerID] = rtcAgent

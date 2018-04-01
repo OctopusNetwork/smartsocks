@@ -12,6 +12,7 @@ class RtcAgent(context: Context?,
                signallingSender: RtcSignalling.RtcSignallingSender,
                sendDataChannelListener: RtcDataChannelListener,
                recvDataChannelListener: RtcDataChannelListener,
+               socketProtectListener: RtcSocketProtectListener?,
                remotePeerId: String,
                config: RtcConfig) {
     val mContext = context
@@ -28,10 +29,20 @@ class RtcAgent(context: Context?,
 
     private val mPeerConnectionConstraints = MediaConstraints()
 
+    init {
+        mRtcSocketProtectListener = socketProtectListener
+    }
+
     companion object {
         var mLocalPeerConnection: PeerConnection? = null
         var mRemotePeerConnection: PeerConnection? = null
         var mPeerConnectionInited: Boolean = false
+        var mRtcSocketProtectListener: RtcSocketProtectListener? = null
+
+        @JvmStatic
+        fun protectSocket(socket: Int) {
+            mRtcSocketProtectListener?.onProtectSocket(socket)
+        }
     }
 
     enum class RtcIceServerType {
@@ -53,19 +64,19 @@ class RtcAgent(context: Context?,
                             port: Int, hostname: String,
                             username: String, password: String,
                             proto: RtcIceServerProto) {
-        val mType = type
-        val mHost = host
-        val mPort = port
-        val mUsername = username
-        val mPassword = password
-        val mProto = proto
-        val mHostname = hostname
+        private val mType = type
+        private val mHost = host
+        private val mPort = port
+        private val mUsername = username
+        private val mPassword = password
+        private val mProto = proto
+        private val mHostname = hostname
 
-        val TAG = "RtcIceConfig"
+        private val TAG = "RtcIceConfig"
 
         private fun appendUriCommon(uri: String) : String {
             var localUri = uri
-            localUri += "://$mHost:$mPort?transport="
+            localUri += ":$mHost:$mPort?transport="
             if (RtcIceServerProto.RTC_ICE_PROTO_UDP == mProto) {
                 localUri += "udp"
             } else if (RtcIceServerProto.RTC_ICE_PROTO_TCP == mProto) {
@@ -108,6 +119,10 @@ class RtcAgent(context: Context?,
     interface RtcDataChannelListener {
         fun onMessage(byteBuffer: ByteBuffer)
         fun onStateChange(state: String)
+    }
+
+    interface RtcSocketProtectListener {
+        fun onProtectSocket(socket: Int)
     }
 
     inner class PeerObserver : SdpObserver, PeerConnection.Observer {

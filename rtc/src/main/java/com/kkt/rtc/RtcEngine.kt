@@ -93,6 +93,12 @@ class RtcEngine {
                     RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
 
             RtcLogging.enableLogging()
+            RtcAgentContainer.setRtcSocketProtectListener(
+                    object: RtcAgent.RtcSocketProtectListener {
+                        override fun onProtectSocket(socket: Int) {
+                            RtcLogging.debug(TAG, "Protect socket: " + socket)
+                        }
+                    })
             RtcSignalling.initialize(config, mRtcSignallingListener)
         }
 
