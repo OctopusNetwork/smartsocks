@@ -2,6 +2,7 @@ package com.kkt.rtc
 
 import android.content.Context
 import org.json.JSONObject
+import java.nio.ByteBuffer
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -30,7 +31,7 @@ class RtcEngine {
 
         val mRtcIceConfigs: ArrayList<RtcAgent.RtcIceConfig> = ArrayList()
 
-        const val TAG: String = "RTCEngine"
+        const val TAG: String = "RtcEngine"
 
         val mRtcSignallingSender = object: RtcSignalling.RtcSignallingSender {
             override fun sendToAll(data: String) {
@@ -62,23 +63,25 @@ class RtcEngine {
                 }
 
                 override fun onAddPeer(peer: RtcSignalling.RtcPeer) {
-                    mPeerMap[peer.mPeerID] = peer
-                    mRtcSignallingEventListener?.onPeerListUpdate(mPeerMap)
-                    mRtcSignallingEventListener?.onAddPeer(peer)
+                    if (!mPeerMap.contains(peer.mPeerID)) {
+                        mPeerMap[peer.mPeerID] = peer
+                        mRtcSignallingEventListener?.onAddPeer(peer)
+                    }
                 }
 
                 override fun onDelPeer(peer: RtcSignalling.RtcPeer) {
                     mPeerMap.remove(peer.mPeerID)
-                    mRtcSignallingEventListener?.onPeerListUpdate(mPeerMap)
                     mRtcSignallingEventListener?.onDelPeer(peer)
                     RtcAgentContainer.delPeer(peer)
                 }
 
             }
 
-        fun initialize(config: RtcEngineInitConfig, listener: RtcSignallingEventListener) {
+        fun initialize(config: RtcEngineInitConfig,
+                       signallingEventListener: RtcSignallingEventListener,
+                       createChannelListener: RtcAgentContainer.Companion.RtcAgentCreateChannelListener) {
             mRtcEngineInitConfig = config
-            mRtcSignallingEventListener = listener
+            mRtcSignallingEventListener = signallingEventListener
 
             mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
                     RtcAgent.RtcIceServerType.RTC_ICE_TURN,
@@ -100,6 +103,7 @@ class RtcEngine {
                             RtcLogging.debug(TAG, "Protect socket: " + socket)
                         }
                     })
+            RtcAgentContainer.setRtcAgentCreateChannelListener(createChannelListener)
             RtcSignalling.initialize(config, mRtcSignallingListener)
         }
 
@@ -112,6 +116,10 @@ class RtcEngine {
                 RtcAgentContainer.createChannel(peer, mRtcEngineInitConfig?.mContext,
                         mRtcSignallingSender, RtcAgent.RtcConfig(mRtcIceConfigs))
             }
+        }
+
+        fun broadcast(msg: String) {
+            RtcAgentContainer.broadcast(msg)
         }
     }
 }

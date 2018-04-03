@@ -53,6 +53,28 @@ class PeerListAdapter(context: Context,
         return view!!
     }
 
+    fun addPeer(peer: RtcSignalling.RtcPeer) {
+        val it = mPeerList.iterator()
+        while (it.hasNext()) {
+            if (it.next().mPeerID == peer.mPeerID) {
+                return
+            }
+        }
+
+        mPeerList.add(peer)
+        notifyDataSetChanged()
+    }
+
+    fun delPeer(peer: RtcSignalling.RtcPeer) {
+        val it = mPeerList.iterator()
+        while (it.hasNext()) {
+            if (it.next().mPeerID == peer.mPeerID) {
+                it.remove()
+            }
+        }
+        notifyDataSetChanged()
+    }
+
     fun updatePeerList(peerMap: HashMap<String, RtcSignalling.RtcPeer>) {
         peerMapToList(peerMap)
         notifyDataSetChanged()

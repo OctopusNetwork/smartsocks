@@ -353,4 +353,14 @@ class RtcAgent(context: Context?,
             processIceCandidate(msgJsonObject)
         }
     }
+
+    fun send(msg: String) : Boolean? {
+        if (mSendDataChannelReady) {
+            return mSendDataChannel?.send(DataChannel.Buffer(
+                    ByteBuffer.wrap(msg.toByteArray()),
+                    true))
+        }
+
+        return false
+    }
 }
