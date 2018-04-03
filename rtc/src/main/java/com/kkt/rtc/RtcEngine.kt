@@ -1,6 +1,7 @@
 package com.kkt.rtc
 
 import android.content.Context
+import org.json.JSONObject
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -43,8 +44,8 @@ class RtcEngine {
 
         private val mRtcSignallingListener: RtcSignalling.RtcSignallingListener =
             object : RtcSignalling.RtcSignallingListener {
-                override fun onMiscMsg(msg: String?) {
-                    RtcAgentContainer.processMessage(msg, mRtcEngineInitConfig?.mContext,
+                override fun onMiscMsg(msgJSONObject: JSONObject) {
+                    RtcAgentContainer.processMessage(msgJSONObject, mRtcEngineInitConfig?.mContext,
                             mRtcSignallingSender, RtcAgent.RtcConfig(mRtcIceConfigs))
                 }
 
@@ -81,14 +82,14 @@ class RtcEngine {
 
             mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
                     RtcAgent.RtcIceServerType.RTC_ICE_TURN,
-                    "192.168.43.180", 3478,
-                    "192.168.43.180",
+                    "192.168.199.199", 3478,
+                    "192.168.199.199",
                     "kikakkz", "1qaz2wsx",
                     RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
             mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
                     RtcAgent.RtcIceServerType.RTC_ICE_STUN,
-                    "192.168.43.180", 3478,
-                    "192.168.43.180",
+                    "192.168.199.199", 3478,
+                    "192.168.199.199",
                     "", "",
                     RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
 

@@ -9,21 +9,22 @@ import java.nio.ByteBuffer
  */
 class RtcAgentContainer {
     companion object {
-        var mRtcAgentMap: HashMap<String, RtcAgent> = HashMap()
-        var mRtcSocketProtectListener: RtcAgent.RtcSocketProtectListener? = null
+        private var mRtcAgentMap: HashMap<String, RtcAgent> = HashMap()
+        private var mRtcSocketProtectListener: RtcAgent.RtcSocketProtectListener? = null
+
+        val TAG = "RtcAgentContainer"
 
         fun setRtcSocketProtectListener(listener: RtcAgent.RtcSocketProtectListener) {
             mRtcSocketProtectListener = listener
         }
 
-        fun processMessage(msg: String?,
+        fun processMessage(msgJSONObject: JSONObject,
                            context: Context?,
                            signallingSender: RtcSignalling.RtcSignallingSender,
                            config: RtcAgent.RtcConfig) {
-            val jsonObject = JSONObject(msg)
-            if (jsonObject.has("targetid") &&
-                    jsonObject.has("sourceid")) {
-                val targetId = jsonObject.getString("targetid")
+            if (msgJSONObject.has("targetid") &&
+                    msgJSONObject.has("sourceid")) {
+                val targetId = msgJSONObject.getString("targetid")
                 if (targetId != RtcSignalling.mRtcSignallingConfig?.mMyPeerName) {
                     return
                 }
@@ -31,11 +32,17 @@ class RtcAgentContainer {
 
             var rtcAgent: RtcAgent? = null
             var sourceid: String? = null
+            var rtcMsgJsonObject: JSONObject? = null
 
-            if (jsonObject.has("sourceid")) {
-                sourceid = jsonObject.getString("sourceid")
-                if (!mRtcAgentMap.contains(sourceid)) {
-                    rtcAgent = mRtcAgentMap.get(sourceid)
+            if (msgJSONObject.has("msg")) {
+                rtcMsgJsonObject = JSONObject(
+                        msgJSONObject.getString("msg"))
+            }
+
+            if (msgJSONObject.has("sourceid")) {
+                sourceid = msgJSONObject.getString("sourceid")
+                if (mRtcAgentMap.contains(sourceid)) {
+                    rtcAgent = mRtcAgentMap[sourceid]
                 } else {
                     val sendDataChannelListener = object: RtcAgent.RtcDataChannelListener {
                         override fun onMessage(byteBuffer: ByteBuffer) {
@@ -43,9 +50,8 @@ class RtcAgentContainer {
                         }
 
                         override fun onStateChange(state: String) {
-
+                            RtcLogging.debug(TAG, "SendDataChannel" + this + " state: " + state)
                         }
-
                     }
                     val recvDataChannelListener = object: RtcAgent.RtcDataChannelListener {
                         override fun onMessage(byteBuffer: ByteBuffer) {
@@ -53,25 +59,32 @@ class RtcAgentContainer {
                         }
 
                         override fun onStateChange(state: String) {
-
+                            RtcLogging.debug(TAG, "RecvDataChannel" + this + " state: " + state)
                         }
 
                     }
+
+                    RtcLogging.debug(TAG, "SendDataChannelListener: $sendDataChannelListener")
+                    RtcLogging.debug(TAG, "RecvDataChannelListener: $recvDataChannelListener")
+
                     rtcAgent = RtcAgent(context, signallingSender,
                             sendDataChannelListener, recvDataChannelListener,
                             mRtcSocketProtectListener,
                             sourceid, config)
-                    rtcAgent.initialize(sourceid, RtcAgent.RtcRole.RTC_ACCEPTOR)
+                    rtcAgent.initialize(sourceid, RtcAgent.RtcRole.RTC_ACCEPTOR, rtcMsgJsonObject)
                     mRtcAgentMap[sourceid] = rtcAgent
+                    return
                 }
             }
 
-            if (null == rtcAgent) {
-                for ((_, v) in mRtcAgentMap) {
-                    v.processMessage(msg)
+            if (null != rtcMsgJsonObject) {
+                if (null == rtcAgent) {
+                    for ((_, v) in mRtcAgentMap) {
+                        v.processMessage(rtcMsgJsonObject)
+                    }
+                } else {
+                    rtcAgent.processMessage(rtcMsgJsonObject, sourceid)
                 }
-            } else {
-                rtcAgent.processMessage(msg, sourceid)
             }
         }
 
@@ -94,7 +107,7 @@ class RtcAgentContainer {
                 }
 
                 override fun onStateChange(state: String) {
-
+                    RtcLogging.debug(TAG, "SendDataChannel" + this + " state: " + state)
                 }
 
             }
@@ -104,10 +117,14 @@ class RtcAgentContainer {
                 }
 
                 override fun onStateChange(state: String) {
-
+                    RtcLogging.debug(TAG, "RecvDataChannel" + this + " state: " + state)
                 }
 
             }
+
+            RtcLogging.debug(TAG, "SendDataChannelListener: $sendDataChannelListener")
+            RtcLogging.debug(TAG, "RecvDataChannelListener: $recvDataChannelListener")
+
             var rtcAgent = RtcAgent(context, signallingSender,
                     sendDataChannelListener, recvDataChannelListener,
                     mRtcSocketProtectListener,

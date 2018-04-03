@@ -25,7 +25,7 @@ class RtcSignalling {
         fun onPeerList(peerList: ArrayList<RtcPeer>)
         fun onAddPeer(peer: RtcPeer)
         fun onDelPeer(peer: RtcPeer)
-        fun onMiscMsg(msg: String?)
+        fun onMiscMsg(msgJSONObject: JSONObject)
     }
 
     interface RtcSignallingSender {
@@ -46,7 +46,7 @@ class RtcSignalling {
         }
         private var mSignallingState: RtcSignallingState =
                 RtcSignallingState.IDLE
-        private const val TAG: String = "RTCSignalling"
+        private const val TAG: String = "RtcSignalling"
 
         private fun register() {
             val json = JSONObject()
@@ -88,31 +88,38 @@ class RtcSignalling {
             }
         }
 
-        private fun processSignallingCommand(cmdJson: String?) : Boolean {
+        private fun getSignallingMessage(payload: String?) : JSONObject? {
             try {
-                val jsonObject = JSONObject(cmdJson)
+                val jsonObject = JSONObject(payload)
                 if (jsonObject.has("msg") &&
                         jsonObject.has("error")) {
                     if (jsonObject.getString("error") == "") {
-                        val msgJsonStr = jsonObject.getString("msg")
-                        val msgJSONObject = JSONObject(msgJsonStr)
-                        if (msgJSONObject.has("cmd")) {
-                            val cmd = msgJSONObject.getString("cmd")
-                            when (cmd) {
-                                "peer_list" -> processPeerList(msgJSONObject.getString("peers"))
-                                "add_peer" -> processAddPeer(msgJSONObject.getString("id"))
-                                "del_peer" -> processDelPeer(msgJSONObject.getString("id"))
-                                else -> { RtcLogging.debug(TAG, "Unknow command: " + cmdJson); return false }
-                            }
-                        }
+                        return JSONObject(jsonObject.getString("msg"))
                     }
                 }
             } catch (excp: JSONException) {
                 excp.printStackTrace()
-                return false
+            }
+            return null
+        }
+
+        private fun processSignallingCommand(cmdJson: String?) : Pair<Boolean, JSONObject?> {
+            val msgJSONObject: JSONObject? = getSignallingMessage(cmdJson)
+            if (msgJSONObject != null) {
+                if (msgJSONObject.has("cmd")) {
+                    val cmd = msgJSONObject.getString("cmd")
+                    when (cmd) {
+                        "peer_list" -> { processPeerList(msgJSONObject.getString("peers")); return Pair(true, null as JSONObject?) }
+                        "add_peer" -> { processAddPeer(msgJSONObject.getString("id")); return Pair(true, null as JSONObject?) }
+                        "del_peer" -> { processDelPeer(msgJSONObject.getString("id")); return Pair(true, null as JSONObject?) }
+                        else -> { RtcLogging.debug(TAG, "Unknow command: " + cmdJson); return Pair(false, msgJSONObject) }
+                    }
+                } else {
+                    return Pair(false, msgJSONObject)
+                }
             }
 
-            return true
+            return Pair(false, msgJSONObject)
         }
 
         fun initialize(config: RtcSignallingConfig, listener: RtcSignallingListener) {
@@ -143,12 +150,12 @@ class RtcSignalling {
                 }
 
                 override fun onTextMessage(payload: String?) {
-                    if (processSignallingCommand(payload?.trim())) {
-                        return
+                    val (consumed, msgJsonObject) = processSignallingCommand(payload?.trim())
+                    if (!consumed) {
+                        if (msgJsonObject != null) {
+                            mRtcSignallingListener?.onMiscMsg(msgJsonObject)
+                        }
                     }
-
-                    // Command processor cannot parse, let upper layer to parse
-                    mRtcSignallingListener?.onMiscMsg(payload)
                 }
             })
         }
@@ -193,24 +200,22 @@ class RtcSignalling {
         }
 
         fun sendToPeer(peerID: String?, msg: String?) {
-            if (mSignallingState != RtcSignallingState.CONNECTED) {
+            if (mSignallingState != RtcSignallingState.REGISTERED) {
                 return
             }
             val json = JSONObject()
             json.put("cmd", "send")
             json.put("targetid", peerID)
-            json.put("sourceid", mRtcSignallingConfig?.mMyPeerName)
             json.put("msg", msg)
             mWebSocketConnection?.sendTextMessage(json.toString())
         }
 
         fun sendToAll(msg: String?) {
-            if (mSignallingState != RtcSignallingState.CONNECTED) {
+            if (mSignallingState != RtcSignallingState.REGISTERED) {
                 return
             }
             val json = JSONObject()
             json.put("cmd", "send")
-            json.put("sourceid", mRtcSignallingConfig?.mMyPeerName)
             json.put("msg", msg)
             mWebSocketConnection?.sendTextMessage(json.toString())
         }

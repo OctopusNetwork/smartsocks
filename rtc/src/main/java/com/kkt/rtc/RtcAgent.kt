@@ -1,6 +1,7 @@
 package com.kkt.rtc
 
 import android.content.Context
+import org.json.JSONObject
 import org.webrtc.*
 import java.nio.ByteBuffer
 import java.util.*
@@ -20,12 +21,14 @@ class RtcAgent(context: Context?,
     val mSendDataChannelListener = sendDataChannelListener
     val mRecvDataChannelListener = recvDataChannelListener
     val mConfig = config
-    var mIceServers = LinkedList<PeerConnection.IceServer>()
-    var mPeerConnectionFactory: PeerConnectionFactory? = null
     var mRemotePeerId = remotePeerId
 
     var mSendDataChannel: DataChannel? = null
+    var mLocalPeerConnection: PeerConnection? = null
+    var mRemotePeerConnection: PeerConnection? = null
     var mSendDataChannelReady: Boolean = false
+
+    private val TAG = "RtcAgent"
 
     private val mPeerConnectionConstraints = MediaConstraints()
 
@@ -34,10 +37,10 @@ class RtcAgent(context: Context?,
     }
 
     companion object {
-        var mLocalPeerConnection: PeerConnection? = null
-        var mRemotePeerConnection: PeerConnection? = null
         var mPeerConnectionInited: Boolean = false
         var mRtcSocketProtectListener: RtcSocketProtectListener? = null
+        var mIceServers = LinkedList<PeerConnection.IceServer>()
+        var mPeerConnectionFactory: PeerConnectionFactory? = null
 
         @JvmStatic
         fun protectSocket(socket: Int) {
@@ -134,7 +137,7 @@ class RtcAgent(context: Context?,
 
         }
 
-        private val TAG = "RTCAgent"
+        private val TAG = "RtcAgentObserver"
 
         override fun onIceConnectionReceivingChange(p0: Boolean) {
 
@@ -225,7 +228,7 @@ class RtcAgent(context: Context?,
             }
 
             override fun onStateChange() {
-                mSendDataChannelListener?.onStateChange(mSendDataChannel?.state()?.name!!)
+                mSendDataChannel?.state()?.name?.let { mSendDataChannelListener?.onStateChange(it) }
                 if (DataChannel.State.OPEN == mSendDataChannel?.state()) {
                     mSendDataChannelReady = true
                 }
@@ -239,7 +242,14 @@ class RtcAgent(context: Context?,
         }
     }
 
-    fun initialize(label: String, role: RtcRole) {
+    private fun createPeerConnection() {
+        mLocalPeerConnection = mPeerConnectionFactory?.createPeerConnection(
+                mIceServers, mPeerConnectionConstraints, mPeerObserver)
+        mRemotePeerConnection = mPeerConnectionFactory?.createPeerConnection(
+                mIceServers, mPeerConnectionConstraints, mPeerObserver)
+    }
+
+    fun initialize(label: String, role: RtcRole, sdpParam: JSONObject? = null) {
         if (!mPeerConnectionInited) {
             for (iceConfig in mConfig.mIceConfigs!!) {
                 mIceServers.add(iceConfig.iceConfigToIceServer())
@@ -255,27 +265,40 @@ class RtcAgent(context: Context?,
                     PeerConnectionFactory.builder()
                             .createPeerConnectionFactory()
 
-            mLocalPeerConnection = mPeerConnectionFactory?.createPeerConnection(
-                    mIceServers, mPeerConnectionConstraints, mPeerObserver)
-            mRemotePeerConnection = mPeerConnectionFactory?.createPeerConnection(
-                    mIceServers, mPeerConnectionConstraints, mPeerObserver)
-
             mPeerConnectionInited = true
         }
 
-        createDataChannel(label,
-                (RtcRole.RTC_ACCEPTOR == role),
-                (RtcRole.RTC_INITIATOR == role))
+        createPeerConnection()
+
+        if (RtcRole.RTC_ACCEPTOR == role) {
+            if (null != sdpParam && sdpParam.has("type")) {
+                val typeStr: String? = sdpParam?.getString("type")
+                val sdpType = SessionDescription.Type.fromCanonicalForm(typeStr)
+                var sdpStr: String?
+
+                if (sdpParam?.has("sdp")) {
+                    sdpStr = sdpParam.getString("sdp")
+                    val sdp = SessionDescription(sdpType, sdpStr)
+                    mLocalPeerConnection?.setRemoteDescription(mPeerObserver, sdp)
+
+                    createDataChannel(label,
+                            (RtcRole.RTC_ACCEPTOR == role && sdpType == SessionDescription.Type.OFFER),
+                            false)
+                }
+            }
+        } else {
+            createDataChannel(label, false, true)
+        }
     }
 
     fun destroy(destroyPeerConnection: Boolean) {
         mSendDataChannel?.dispose()
         mSendDataChannel = null
+        mRemotePeerConnection?.dispose()
+        mRemotePeerConnection = null
+        mLocalPeerConnection?.dispose()
+        mLocalPeerConnection = null
         if (destroyPeerConnection) {
-            mRemotePeerConnection?.dispose()
-            mRemotePeerConnection = null
-            mLocalPeerConnection?.dispose()
-            mLocalPeerConnection = null
             mPeerConnectionFactory?.dispose()
             PeerConnectionFactory.stopInternalTracingCapture()
             PeerConnectionFactory.shutdownInternalTracer()
@@ -283,11 +306,51 @@ class RtcAgent(context: Context?,
         }
     }
 
-    fun processMessage(msg: String?) {
+    private fun processIceCandidate(jsonObject: JSONObject) {
+        var sdpMid: String? = null
+        var sdpStr: String? = null
+        var sdpMLineIndex: Int? = null
 
+        if (jsonObject.has("sdpMid")) {
+            sdpMid = jsonObject.getString("sdpMid")
+        }
+
+        if (jsonObject.has("sdpMLineIndex")) {
+            sdpMLineIndex = jsonObject.getInt("sdpMLineIndex")
+        }
+
+        if (jsonObject.has("candidate")) {
+            sdpStr = jsonObject.getString("candidate")
+        }
+
+        val iceCandidate = IceCandidate(sdpMid, sdpMLineIndex!!, sdpStr)
+        mLocalPeerConnection?.addIceCandidate(iceCandidate)
     }
 
-    fun processMessage(msg: String?, peerId: String?) {
+    private fun processSessionDescription(jsonObject: JSONObject, peerId: String?) {
+        val typeStr: String = jsonObject.getString("type")
+        val sdpType = SessionDescription.Type.fromCanonicalForm(typeStr)
+        var sdpStr: String?
 
+        if (jsonObject.has("sdp")) {
+            sdpStr = jsonObject.getString("sdp")
+            val sdp = SessionDescription(sdpType, sdpStr)
+            mLocalPeerConnection?.setRemoteDescription(mPeerObserver, sdp)
+            createDataChannel("Response-To-$peerId",
+                    (sdpType == SessionDescription.Type.OFFER))
+        }
+    }
+
+    fun processMessage(msgJsonObject: JSONObject) {
+        RtcLogging.debug(TAG, msgJsonObject.toString())
+    }
+
+    fun processMessage(msgJsonObject: JSONObject, peerId: String?) {
+        RtcLogging.debug(TAG, msgJsonObject.toString() + " from " + peerId)
+        if (msgJsonObject.has("type")) {
+            processSessionDescription(msgJsonObject, peerId)
+        } else {
+            processIceCandidate(msgJsonObject)
+        }
     }
 }

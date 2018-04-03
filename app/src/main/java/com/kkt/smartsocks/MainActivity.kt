@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         RtcEngine.initialize(RtcEngine.RtcEngineInitConfig(
-                this, "192.168.43.180", 8089),
+                this, "192.168.199.199", 8089),
             object : RtcEngine.RtcSignallingEventListener {
                 override fun onDelPeer(peer: RtcSignalling.RtcPeer) {
 
