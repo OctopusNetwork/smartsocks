@@ -1,5 +1,7 @@
 package com.kkt.sslocal
 
+import com.kkt.tcpip.IPAddress
+
 /**
  * Created by owen on 18-4-4.
  */

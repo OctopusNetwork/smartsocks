@@ -71,7 +71,16 @@ class MainActivity : AppCompatActivity() {
                 mVpnRunning = !mVpnRunning
                 if (mVpnRunning) {
                     SSVpnService.initialize(this@MainActivity,
-                            Intent(this@MainActivity, MainActivity::class.java))
+                            Intent(this@MainActivity, MainActivity::class.java),
+                            object: SSVpnService.Companion.SSVpnServiceEventListener {
+                                override fun onVpnServiceCrash() {
+
+                                }
+
+                                override fun onVpnServiceStart(vpnSessionName: String) {
+
+                                }
+                            })
                 } else {
                     SSVpnService.destroy()
                 }

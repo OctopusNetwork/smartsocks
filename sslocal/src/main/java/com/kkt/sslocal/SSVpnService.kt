@@ -3,6 +3,7 @@ package com.kkt.sslocal
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import com.kkt.tcpip.IPPacket
 
 /**
  * Created by owen on 18-4-4.
@@ -13,7 +14,15 @@ class SSVpnService {
         private val TAG = "SSVpnService"
         private var mVpnThreadRunning = false
 
-        private val mPacket: ByteArray = ByteArray(4096)
+        private val mPacket: ByteArray = ByteArray(SSVpnConfig.SS_VPN_MTU)
+        private val mIPPacket = IPPacket(mPacket, 0)
+
+        private var mRecvBytes: Long = 0
+        private var mSendBytes: Long = 0
+
+        fun getNetworkFlow(): Pair<Long, Long> {
+            return Pair(mRecvBytes, mSendBytes)
+        }
 
         private fun waitVpnServicePrepared(context: Context) {
             while (null != SSVpnImplService.prepare(context)) {
@@ -21,6 +30,13 @@ class SSVpnService {
                 Thread.sleep(100)
             }
         }
+
+        interface SSVpnServiceEventListener {
+            fun onVpnServiceCrash()
+            fun onVpnServiceStart(vpnSessionName: String)
+        }
+
+        var mSSVpnServiceEventListener: SSVpnServiceEventListener? = null
 
         private fun initVpnInterface(configIntent: Intent) {
             SSVpnImplService.mVpnServiceInstance?.setup(configIntent)
@@ -33,18 +49,25 @@ class SSVpnService {
                 waitVpnServicePrepared(mActivity)
                 initVpnInterface(mConfigIntent)
                 do {
-                    val size = SSVpnImplService.mVpnServiceInstance?.read(mPacket)
-                    if (-1 == size) {
-                        SSLocalLogging.error(TAG, "VPN interface corrupted")
-                        break
+                    val size: Int = SSVpnImplService.mVpnServiceInstance?.read(mPacket)!!
+                    when (size) {
+                        -1 -> {
+                            SSLocalLogging.error(TAG, "VPN interface corrupted")
+                            mSSVpnServiceEventListener?.onVpnServiceCrash()
+                        }
+                        0 -> sleep(10)
+                        else -> {
+                            val (direction, bytes) = mIPPacket.process(size,
+                                    SSVpnImplService.mVpnServiceInstance?.mLocalIpIntAddr!!)
+                            when (direction) {
+                                IPPacket.IPAccessDirection.IP_ACCESS_INCOMING -> mRecvBytes += bytes
+                                IPPacket.IPAccessDirection.IP_ACCESS_OUTCOMING -> mSendBytes += bytes
+                            }
+                            SSVpnImplService.mVpnServiceInstance?.write(mPacket, size)
+                        }
                     }
 
-                    if (0 == size) {
-                        sleep(10)
-                        continue
-                    }
-
-                    SSLocalLogging.debug(TAG, "VPN data $size bytes")
+                    if (size < 0) break
                 } while (mVpnThreadRunning)
             }
         }
@@ -59,8 +82,10 @@ class SSVpnService {
             }
         }
 
-        fun initialize(activity: Activity, configIntent: Intent) {
+        fun initialize(activity: Activity, configIntent: Intent,
+                       vpnServiceEventListener: SSVpnServiceEventListener) {
             SSLocalLogging.enableLogging()
+            mSSVpnServiceEventListener = vpnServiceEventListener
 
             SSVpnImplService.setVpnServiceEventListener(
                     object: SSVpnImplService.SSVpnImplEventListener {
@@ -77,6 +102,8 @@ class SSVpnService {
                                 mVpnThreadRunning = true
                                 mVpnThread = VpnThread(activity, configIntent)
                                 mVpnThread?.start()
+                                mSSVpnServiceEventListener?.onVpnServiceStart(
+                                        SSVpnConfig.SS_SESSION_NAME)
                             }
                         }
                     })

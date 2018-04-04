@@ -1,4 +1,4 @@
-package com.kkt.sslocal
+package com.kkt.tcpip
 
 /**
  * Created by owen on 18-4-4.
@@ -25,5 +25,11 @@ class IPAddress(address: String, prefixLength: Int = 32) {
                 or (Integer.parseInt(arrStrings[1]) shl 16)
                 or (Integer.parseInt(arrStrings[2]) shl 8)
                 or Integer.parseInt(arrStrings[3]))
+    }
+
+    companion object {
+        fun hexIpToString(ip: Int) {
+
+        }
     }
 }

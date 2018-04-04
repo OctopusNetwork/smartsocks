@@ -1,6 +1,5 @@
 package com.kkt.sslocal
 
-import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -25,7 +24,7 @@ class SSVpnImplService : VpnService() {
         }
     }
 
-    private var mLocalIpIntAddr: Int? = null
+    var mLocalIpIntAddr: Int = 0
     private var mVpnParcelFileDescriptor: ParcelFileDescriptor? = null
     private var mVpnOutputStream: FileOutputStream? = null
     private var mVpnInputStream: FileInputStream? = null
@@ -124,13 +123,6 @@ class SSVpnImplService : VpnService() {
             }
         }
 
-        builder.addAllowedApplication(packageName)
-        SSLocalLogging.debug(TAG, "VPN bypass: " + packageName)
-        builder.addAllowedApplication(
-                SSVpnImplService::class.java.`package`.name)
-        SSLocalLogging.debug(TAG, "VPN bypass: " +
-                SSVpnImplService::class.java.`package`.name)
-
         val pendingIntent = PendingIntent.getActivity(
                 this, 0, configIntent, 0)
         builder.setConfigureIntent(pendingIntent)
@@ -152,5 +144,9 @@ class SSVpnImplService : VpnService() {
 
     fun read(buf: ByteArray) : Int? {
         return mVpnInputStream?.read(buf)
+    }
+
+    fun write(buf: ByteArray, size: Int, offset: Int = 0) {
+        mVpnOutputStream?.write(buf, offset, size)
     }
 }
