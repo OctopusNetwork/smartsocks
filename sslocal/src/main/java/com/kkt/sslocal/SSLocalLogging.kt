@@ -1,4 +1,4 @@
-package com.kkt.rtc
+package com.kkt.sslocal
 
 import android.util.Log
 import java.nio.ByteBuffer
@@ -7,9 +7,9 @@ import java.nio.charset.Charset
 import java.nio.charset.CharsetDecoder
 
 /**
- * Created by owen on 18-3-23.
+ * Created by owen on 18-4-4.
  */
-class RtcLogging {
+class SSLocalLogging {
     companion object {
         var mLoggingEnable = false
 
@@ -24,6 +24,12 @@ class RtcLogging {
         fun debug(tag: String, msg: String) {
             if (mLoggingEnable) {
                 Log.d(tag, msg)
+            }
+        }
+
+        fun error(tag: String, msg: String) {
+            if (mLoggingEnable) {
+                Log.e(tag, msg)
             }
         }
 

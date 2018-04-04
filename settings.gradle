@@ -1,1 +1,1 @@
-include ':app', ':rtc', ':ssserver'
+include ':app', ':rtc', ':ssserver', ':sslocal'

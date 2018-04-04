@@ -79,7 +79,8 @@ class RtcEngine {
 
         fun initialize(config: RtcEngineInitConfig,
                        signallingEventListener: RtcSignallingEventListener,
-                       createChannelListener: RtcAgentContainer.Companion.RtcAgentCreateChannelListener) {
+                       createChannelListener: RtcAgentContainer.Companion.RtcAgentCreateChannelListener,
+                       protectSocketListener: RtcAgent.RtcSocketProtectListener) {
             mRtcEngineInitConfig = config
             mRtcSignallingEventListener = signallingEventListener
 
@@ -97,12 +98,7 @@ class RtcEngine {
                     RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
 
             RtcLogging.enableLogging()
-            RtcAgentContainer.setRtcSocketProtectListener(
-                    object: RtcAgent.RtcSocketProtectListener {
-                        override fun onProtectSocket(socket: Int) {
-                            RtcLogging.debug(TAG, "Protect socket: " + socket)
-                        }
-                    })
+            RtcAgentContainer.setRtcSocketProtectListener(protectSocketListener)
             RtcAgentContainer.setRtcAgentCreateChannelListener(createChannelListener)
             RtcSignalling.initialize(config, mRtcSignallingListener)
         }

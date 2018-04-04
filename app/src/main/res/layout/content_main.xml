@@ -19,6 +19,14 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:text="Send Hello Brother"
+        android:layout_above="@+id/switch_vpn"
+        />
+
+    <Button
+        android:id = "@id/switch_vpn"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Switch VPN"
         android:layout_alignParentBottom="true"
         />
 

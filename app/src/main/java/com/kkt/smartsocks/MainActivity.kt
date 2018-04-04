@@ -1,5 +1,7 @@
 package com.kkt.smartsocks
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
@@ -7,17 +9,37 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
-import com.kkt.rtc.RtcAgentContainer
-import com.kkt.rtc.RtcEngine
-import com.kkt.rtc.RtcLogging
-import com.kkt.rtc.RtcSignalling
+import android.widget.Toast
+import com.kkt.rtc.*
+import com.kkt.sslocal.SSVpnService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.nio.ByteBuffer
+import java.nio.CharBuffer
+import java.nio.charset.Charset
+import java.nio.charset.CharsetDecoder
 
 class MainActivity : AppCompatActivity() {
 
     val TAG = "MainActivity"
+
+    var mVpnRunning = false
+
+    private fun byteBufferToString(byteBuffer: ByteBuffer) : String? {
+        var charset: Charset?
+        var decoder: CharsetDecoder?
+        var charBuffer: CharBuffer? = null
+
+        try {
+            charset = Charset.forName("UTF-8")
+            decoder = charset.newDecoder()
+            charBuffer = decoder.decode(byteBuffer.asReadOnlyBuffer())
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+
+        return charBuffer?.toString()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +66,18 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        switch_vpn.setOnClickListener(object: View.OnClickListener {
+            override fun onClick(p0: View?) {
+                mVpnRunning = !mVpnRunning
+                if (mVpnRunning) {
+                    SSVpnService.initialize(this@MainActivity,
+                            Intent(this@MainActivity, MainActivity::class.java))
+                } else {
+                    SSVpnService.destroy()
+                }
+            }
+        })
+
         RtcEngine.initialize(RtcEngine.RtcEngineInitConfig(
                 this, "192.168.199.199", 8089),
             object : RtcEngine.RtcSignallingEventListener {
@@ -67,19 +101,32 @@ class MainActivity : AppCompatActivity() {
                             msg: RtcAgentContainer.Companion.RtcAgentDataChannelMessage,
                             info: String?) {
                         RtcLogging.debug(TAG, "State of: " + peerId)
-                        if (null != info) RtcLogging.debug(TAG, info)
+                        if (null != info) {
+                            RtcLogging.debug(TAG, info)
+                            runOnUiThread { Toast.makeText(this@MainActivity,
+                                    "State of $peerId: $info",
+                                    Toast.LENGTH_LONG).show() }
+                        }
                     }
 
                     override fun onRtcAgentDataChannelMessage(
                             peerId: String,
                             msg: RtcAgentContainer.Companion.RtcAgentDataChannelMessage,
                             info: ByteBuffer?) {
-                        RtcLogging.debug(TAG, "Message from: " + peerId)
-                        if (null != info) RtcLogging.debug(TAG, info)
+                        RtcLogging.debug(TAG, "Message from " + peerId)
+                        if (null != info) {
+                            RtcLogging.debug(TAG, info)
+                            runOnUiThread { Toast.makeText(this@MainActivity,
+                                    "Message from " + peerId + ": " + byteBufferToString(info),
+                                    Toast.LENGTH_LONG).show() }
+                        }
                     }
                 }
             }
-
+        }, object: RtcAgent.RtcSocketProtectListener {
+            override fun onProtectSocket(socket: Int) {
+                SSVpnService.protectSocket(socket)
+            }
         })
     }
 
@@ -102,5 +149,13 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         RtcEngine.destroy()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (SSVpnService.SS_VPN_SERVICE_REQUEST == requestCode) {
+            if (Activity.RESULT_OK == resultCode) {
+                SSVpnService.start(this)
+            }
+        }
     }
 }
