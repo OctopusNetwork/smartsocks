@@ -3,7 +3,7 @@ package com.kkt.tcpip
 import com.kkt.dns.DNSPacket
 import com.kkt.http.HttpHeaderParser
 import com.kkt.sslocal.UDPProxyServer
-import com.kkt.sstunnel.SSLocalLogging
+import com.kkt.utils.SSLocalLogging
 import com.kkt.utils.EasyValue
 import java.nio.ByteBuffer
 import kotlin.experimental.and
@@ -166,7 +166,7 @@ class IPPacket(data: ByteArray, offset: Int) {
         if (bodyLen < 0) return false
 
         var sum = Checksum.getsum(mData, mOffset + offset_src_ip, 8)
-        sum += getProtocol() and 0xFF.toByte()
+        sum += getProtocol().toInt() and 0xFF
         sum += bodyLen.toLong()
 
         return mTCPPacket.checksum(sum, bodyLen)
@@ -181,10 +181,7 @@ class IPPacket(data: ByteArray, offset: Int) {
                     setSourceIP(getDestinationIP())
                     mTCPPacket.setSourcePort(iport.mPort)
                     setDestinationIP(localIP)
-                    if (!tcpChecksum()) {
-                        SSLocalLogging.error(TAG,
-                                "TCP/IP tcpChecksum error: " + toString())
-                    }
+                    tcpChecksum()
                     iport.mBytesRecv += size
                     return Pair(IPAccessDirection.IP_ACCESS_INCOMING, size)
                 }
@@ -221,10 +218,7 @@ class IPPacket(data: ByteArray, offset: Int) {
                 setDestinationIP(localIP)
                 mTCPPacket.setDestinationPort(mLocalServicePort)
 
-                if (!tcpChecksum()) {
-                    SSLocalLogging.error(TAG,
-                            "TCP/IP tcpChecksum error: " + toString())
-                }
+                tcpChecksum()
                 iport.mBytesSent += tcpDataSize
 
                 SSLocalLogging.debug(TAG, mTCPPacket.toString())
@@ -280,7 +274,7 @@ class IPPacket(data: ByteArray, offset: Int) {
             return false
 
         var sum = Checksum.getsum(mData, mOffset + offset_src_ip, 8)
-        sum += getProtocol() and 0xFF.toByte()
+        sum += getProtocol().toInt() and 0xFF
         sum += bodyLen.toLong()
 
         return mUDPPacket.checksum(sum, bodyLen)

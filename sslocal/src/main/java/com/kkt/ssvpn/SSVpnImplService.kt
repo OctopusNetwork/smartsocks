@@ -1,4 +1,4 @@
-package com.kkt.sstunnel
+package com.kkt.ssvpn
 
 import android.app.PendingIntent
 import android.content.Context

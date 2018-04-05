@@ -1,8 +1,7 @@
 package com.kkt.sslocal
 
 import com.kkt.dns.DNSPacket
-import com.kkt.sstunnel.SSLocalLogging
-import com.kkt.sstunnel.SSVpnService
+import com.kkt.ssvpn.SSVpnService
 import com.kkt.tcpip.IPPacket
 import java.net.DatagramPacket
 import java.net.DatagramSocket

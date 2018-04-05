@@ -35,7 +35,7 @@
         </activity>
 
         <service
-            android:name="com.kkt.sstunnel.SSVpnImplService"
+            android:name="com.kkt.ssvpn.SSVpnImplService"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
                 <action android:name="android.net.VpnService" />

@@ -1,8 +1,7 @@
 package com.kkt.dns
 
-import com.kkt.sstunnel.SSLocalLogging
+import com.kkt.utils.SSLocalLogging
 import java.nio.ByteBuffer
-import kotlin.experimental.and
 
 /**
  * Created by owen on 18-4-5.

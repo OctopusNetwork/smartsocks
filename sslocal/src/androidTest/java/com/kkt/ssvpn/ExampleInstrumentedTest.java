@@ -1,4 +1,4 @@
-package com.kkt.sstunnel;
+package com.kkt.ssvpn;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

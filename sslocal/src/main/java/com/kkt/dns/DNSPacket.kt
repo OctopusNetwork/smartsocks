@@ -1,8 +1,8 @@
 package com.kkt.dns
 
 import com.kkt.sslocal.UDPProxyServer
-import com.kkt.sstunnel.SSLocalLogging
-import com.kkt.sstunnel.SSVpnService
+import com.kkt.utils.SSLocalLogging
+import com.kkt.ssvpn.SSVpnService
 import com.kkt.tcpip.IPAddress
 import com.kkt.tcpip.IPPacket
 import java.net.DatagramPacket

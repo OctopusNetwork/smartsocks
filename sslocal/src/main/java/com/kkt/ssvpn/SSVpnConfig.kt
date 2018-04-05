@@ -1,6 +1,7 @@
-package com.kkt.sstunnel
+package com.kkt.ssvpn
 
 import com.kkt.tcpip.IPAddress
+import java.net.InetSocketAddress
 
 /**
  * Created by owen on 18-4-4.
@@ -13,6 +14,8 @@ class SSVpnConfig {
 
         val mDnsList: ArrayList<IPAddress> = ArrayList()
         val mRouteList: ArrayList<IPAddress> = ArrayList()
+
+        var mVpnServerAddress: InetSocketAddress? = null
 
         fun getDefaultLocalIP(): IPAddress {
             return IPAddress("10.8.0.2", 32)

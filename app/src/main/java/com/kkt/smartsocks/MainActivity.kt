@@ -11,7 +11,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
 import com.kkt.rtc.*
-import com.kkt.sstunnel.SSVpnService
+import com.kkt.ssvpn.SSVpnService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.nio.ByteBuffer
@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        SSVpnService.setVpnServer("192.168.199.199", 10993)
         switch_vpn.setOnClickListener(object: View.OnClickListener {
             override fun onClick(p0: View?) {
                 mVpnRunning = !mVpnRunning

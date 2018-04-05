@@ -1,4 +1,4 @@
-package com.kkt.sstunnel;
+package com.kkt.ssvpn;
 
 import org.junit.Test;
 

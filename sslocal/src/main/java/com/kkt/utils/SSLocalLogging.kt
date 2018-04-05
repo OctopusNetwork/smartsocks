@@ -1,4 +1,4 @@
-package com.kkt.sstunnel
+package com.kkt.utils
 
 import android.util.Log
 import java.nio.ByteBuffer

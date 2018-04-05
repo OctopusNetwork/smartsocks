@@ -1,4 +1,4 @@
-package com.kkt.sstunnel
+package com.kkt.ssvpn
 
 import android.app.Activity
 import android.content.Context
@@ -6,7 +6,9 @@ import android.content.Intent
 import com.kkt.sslocal.TCPProxyServer
 import com.kkt.sslocal.UDPProxyServer
 import com.kkt.tcpip.IPPacket
+import com.kkt.utils.SSLocalLogging
 import java.net.DatagramSocket
+import java.net.InetSocketAddress
 import java.net.Socket
 
 /**
@@ -29,6 +31,10 @@ class SSVpnService {
 
         fun getNetworkFlow(): Pair<Long, Long> {
             return Pair(mRecvBytes, mSendBytes)
+        }
+
+        fun setVpnServer(host: String, port: Int) {
+            SSVpnConfig.mVpnServerAddress = InetSocketAddress(host, port)
         }
 
         private fun waitVpnServicePrepared(context: Context) {
