@@ -1,7 +1,5 @@
 package com.kkt.tcpip
 
-import android.support.v4.app.INotificationSideChannel
-
 /**
  * Created by owen on 18-4-4.
  */
@@ -13,6 +11,8 @@ object PortMapping {
         var mPacketsSent: Int = 0
         var mBytesSent: Int = 0
         var mBytesRecv: Int = 0
+
+        var mHost: String? = null
 
         override fun toString(): String {
             return "" + IPAddress.hexIpToString(mIP) + "/" + mPort

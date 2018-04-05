@@ -1,4 +1,4 @@
-package com.kkt.sslocal;
+package com.kkt.sstunnel;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

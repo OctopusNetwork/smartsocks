@@ -1,4 +1,4 @@
-package com.kkt.sslocal;
+package com.kkt.sstunnel;
 
 import org.junit.Test;
 

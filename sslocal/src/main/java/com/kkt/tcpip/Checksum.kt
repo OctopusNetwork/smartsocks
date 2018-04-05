@@ -12,13 +12,13 @@ object Checksum {
         var len = len
         var sum: Long = 0 /* assume 32 bit long, 16 bit short */
         while (len > 1) {
-            sum += (EasyValue.readShort(buf, offset) and 0xFFFF.toShort()).toLong()
+            sum += (EasyValue.readShort(buf, offset).toLong() and 0xFFFF)
             offset += 2
             len -= 2
         }
 
         if (len > 0) {
-            sum += ((buf[offset] and 0xFF.toByte()).toInt() shl 8).toLong()
+            sum += ((buf[offset].toLong() and 0xFF) shl 8)
         }
         return sum
     }
@@ -27,6 +27,6 @@ object Checksum {
         var check = sum + getsum(buf, offset, len)
         while (check shr 16 > 0)
             check = (check and 0xFFFF) + (check shr 16)
-        return sum.inv().toShort()
+        return check.inv().toShort()
     }
 }

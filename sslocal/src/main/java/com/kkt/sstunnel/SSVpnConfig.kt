@@ -1,4 +1,4 @@
-package com.kkt.sslocal
+package com.kkt.sstunnel
 
 import com.kkt.tcpip.IPAddress
 

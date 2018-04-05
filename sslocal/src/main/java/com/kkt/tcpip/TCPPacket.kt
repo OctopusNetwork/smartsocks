@@ -28,8 +28,8 @@ class TCPPacket(data: ByteArray, offset: Int) {
     var mOffset: Int = offset
 
     fun getHeaderLength(): Int {
-        val lenres = mData[mOffset + offset_lenres] and 0xFF.toByte()
-        return (lenres.toInt() shr 4) * 4
+        val lenres: Int = mData[mOffset + offset_lenres].toInt() and 0xFF
+        return (lenres shr 4) * 4
     }
 
     fun getSourcePort(): Short {
@@ -76,8 +76,8 @@ class TCPPacket(data: ByteArray, offset: Int) {
                 if ((getFlags() and RST.toByte()).toInt() == RST) "RST " else "",
                 if ((getFlags() and FIN.toByte()).toInt() == FIN) "FIN " else "",
                 if ((getFlags() and URG.toByte()).toInt() == URG) "URG " else "",
-                getSourcePort() and 0xFFFF.toShort(),
-                getDestinationPort() and 0xFFFF.toShort(),
+                getSourcePort().toInt() and 0xFFFF,
+                getDestinationPort().toInt() and 0xFFFF,
                 getSeqID(),
                 getAckID())
     }

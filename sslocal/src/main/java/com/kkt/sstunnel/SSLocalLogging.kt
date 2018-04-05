@@ -1,4 +1,4 @@
-package com.kkt.sslocal
+package com.kkt.sstunnel
 
 import android.util.Log
 import java.nio.ByteBuffer
@@ -11,7 +11,7 @@ import java.nio.charset.CharsetDecoder
  */
 class SSLocalLogging {
     companion object {
-        var mLoggingEnable = false
+        var mLoggingEnable = true
 
         fun enableLogging() {
             mLoggingEnable = true

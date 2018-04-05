@@ -11,7 +11,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
 import com.kkt.rtc.*
-import com.kkt.sslocal.SSVpnService
+import com.kkt.sstunnel.SSVpnService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.nio.ByteBuffer

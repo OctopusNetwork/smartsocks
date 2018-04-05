@@ -1,4 +1,4 @@
-package com.kkt.sslocal
+package com.kkt.sstunnel
 
 import android.app.PendingIntent
 import android.content.Context
@@ -7,6 +7,8 @@ import android.net.VpnService
 import android.os.ParcelFileDescriptor
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.DatagramSocket
+import java.net.Socket
 import java.util.*
 
 /**
@@ -37,7 +39,9 @@ class SSVpnImplService : VpnService() {
 
     companion object {
         var mVpnServiceInstance: SSVpnImplService? = null
-        private var mProtectSockets: ArrayList<Int> = ArrayList()
+        private var mProtectSocketsHandle: ArrayList<Int> = ArrayList()
+        private var mProtectSockets: ArrayList<Socket> = ArrayList()
+        private var mProtectDatagramSockets: ArrayList<DatagramSocket> = ArrayList()
         private var mVpnEventListener: SSVpnImplEventListener? = null
 
         fun prepare(context: Context) : Intent? {
@@ -48,9 +52,28 @@ class SSVpnImplService : VpnService() {
             mVpnServiceInstance?.stopSelf()
         }
 
-        fun protectSocket(socket: Int) {
-            if (null == mVpnServiceInstance) {
+        fun protectSocket(socket: Int): Boolean? {
+            return if (null == mVpnServiceInstance) {
+                mProtectSocketsHandle.add(socket)
+                true
+            } else {
+                mVpnServiceInstance?.protect(socket)
+            }
+        }
+
+        fun protectSocket(socket: Socket): Boolean? {
+            return if (null == mVpnServiceInstance) {
                 mProtectSockets.add(socket)
+                true
+            } else {
+                mVpnServiceInstance?.protect(socket)
+            }
+        }
+
+        fun protectSocket(socket: DatagramSocket): Boolean? {
+            return if (null == mVpnServiceInstance) {
+                mProtectDatagramSockets.add(socket)
+                true
             } else {
                 mVpnServiceInstance?.protect(socket)
             }
@@ -68,6 +91,15 @@ class SSVpnImplService : VpnService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         mVpnEventListener?.onVpnServiceStart()
+        for (socket in mProtectSocketsHandle) {
+            mVpnServiceInstance?.protect(socket)
+        }
+        for (socket in mProtectSockets) {
+            mVpnServiceInstance?.protect(socket)
+        }
+        for (socket in mProtectDatagramSockets) {
+            mVpnServiceInstance?.protect(socket)
+        }
         return super.onStartCommand(intent, flags, startId)
     }
 

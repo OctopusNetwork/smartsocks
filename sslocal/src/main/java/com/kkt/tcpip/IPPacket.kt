@@ -1,6 +1,9 @@
 package com.kkt.tcpip
 
-import com.kkt.sslocal.SSLocalLogging
+import com.kkt.dns.DNSPacket
+import com.kkt.http.HttpHeaderParser
+import com.kkt.sslocal.UDPProxyServer
+import com.kkt.sstunnel.SSLocalLogging
 import com.kkt.utils.EasyValue
 import java.nio.ByteBuffer
 import kotlin.experimental.and
@@ -11,10 +14,18 @@ import kotlin.experimental.and
 class IPPacket(data: ByteArray, offset: Int) {
     val TAG = "IPPacket"
 
-    val IP: Short = 0x0800
-    val ICMP: Byte = 1
-    val TCP: Byte = 6
-    val UDP: Byte = 17
+    companion object {
+        val IP: Short = 0x0800
+        val ICMP: Byte = 1
+        val TCP: Byte = 6
+        val UDP: Byte = 17
+
+        var mLocalServicePort: Short = 0
+
+        fun setLocalServicePort(port: Short) {
+            mLocalServicePort = port
+        }
+    }
 
     internal val offset_ver_ihl: Byte = 0 // 0: Version (4 bits) + Internet header length (4// bits)
     internal val offset_tos: Byte = 1 // 1: Type of service
@@ -23,7 +34,7 @@ class IPPacket(data: ByteArray, offset: Int) {
     internal val offset_flags_fo: Short = 6 // 6: Flags (3 bits) + Fragment offset (13 bits)
     internal val offset_ttl: Byte = 8 // 8: Time to live
     val offset_proto: Byte = 9 // 9: Protocol
-    internal val offset_crc: Short = 10 // 10: Header checksum
+    internal val offset_crc: Short = 10 // 10: Header tcpChecksum
     val offset_src_ip = 12 // 12: Source address
     val offset_dest_ip = 16 // 16: Destination address
     internal val offset_op_pad = 20 // 20: Option + Padding
@@ -31,11 +42,9 @@ class IPPacket(data: ByteArray, offset: Int) {
     var mData: ByteArray = data
     val mOffset: Int = offset
 
-    var mLocalServicePort: Short = 0
-
-    private val mTCPPacket = TCPPacket(mData, 20)
-    private val mUDPPacket = UDPPacket(mData, 20)
-    private val mDNSBuffer = (ByteBuffer.wrap(mData)
+    val mTCPPacket = TCPPacket(mData, 20)
+    val mUDPPacket = UDPPacket(mData, 20)
+    val mDNSBuffer = (ByteBuffer.wrap(mData)
             .position(28) as ByteBuffer).slice()
 
     enum class IPAccessDirection {
@@ -144,24 +153,17 @@ class IPPacket(data: ByteArray, offset: Int) {
                 getHeaderLength())
     }
 
-    fun setLocalServicePort(port: Short) {
-        mLocalServicePort = port
-    }
-
-    private fun checksum(): Boolean {
+    private fun tcpChecksum(): Boolean {
         val oldCrc = getCrc()
         setCrc(0.toShort())
         val newCrc = Checksum.checksum(
                 0, mData, mOffset, getHeaderLength())
         setCrc(newCrc)
 
-        if (oldCrc != newCrc) {
-            return false
-        }
+        if (oldCrc != newCrc) return false
 
         val bodyLen = getTotalLength() - getHeaderLength()
-        if (bodyLen < 0)
-            return false
+        if (bodyLen < 0) return false
 
         var sum = Checksum.getsum(mData, mOffset + offset_src_ip, 8)
         sum += getProtocol() and 0xFF.toByte()
@@ -179,9 +181,9 @@ class IPPacket(data: ByteArray, offset: Int) {
                     setSourceIP(getDestinationIP())
                     mTCPPacket.setSourcePort(iport.mPort)
                     setDestinationIP(localIP)
-                    if (!checksum()) {
+                    if (!tcpChecksum()) {
                         SSLocalLogging.error(TAG,
-                                "TCP/IP checksum error: " + iport.toString())
+                                "TCP/IP tcpChecksum error: " + toString())
                     }
                     iport.mBytesRecv += size
                     return Pair(IPAccessDirection.IP_ACCESS_INCOMING, size)
@@ -202,12 +204,32 @@ class IPPacket(data: ByteArray, offset: Int) {
                     return Pair(IPAccessDirection.IP_ACCESS_OUTCOMING, 0)
                 }
 
+                if (iport.mBytesSent == 0 && tcpDataSize > 10) {
+                    val dataOffset = mTCPPacket.mOffset + mTCPPacket.getHeaderLength()
+                    val host = HttpHeaderParser.parseHost(
+                            mTCPPacket.mData, dataOffset, tcpDataSize)
+                    if (host != null) {
+                        iport.mHost = host
+                        SSLocalLogging.debug(TAG,
+                                "Request to: " + iport.mHost + "/" + iport.mIP)
+                    }
+                }
+
+                SSLocalLogging.debug(TAG, mTCPPacket.toString())
+
                 setSourceIP(getDestinationIP())
                 setDestinationIP(localIP)
                 mTCPPacket.setDestinationPort(mLocalServicePort)
 
-                checksum()
+                if (!tcpChecksum()) {
+                    SSLocalLogging.error(TAG,
+                            "TCP/IP tcpChecksum error: " + toString())
+                }
                 iport.mBytesSent += tcpDataSize
+
+                SSLocalLogging.debug(TAG, mTCPPacket.toString())
+                SSLocalLogging.debug(TAG, toString())
+
                 return Pair(IPAccessDirection.IP_ACCESS_OUTCOMING, tcpDataSize)
             }
         }
@@ -215,24 +237,59 @@ class IPPacket(data: ByteArray, offset: Int) {
         return Pair(IPAccessDirection.IP_ACCESS_OUTCOMING, 0)
     }
 
-    private fun processUDPPacket(size: Int, localIP: Int): Pair<IPAccessDirection, Int> {
+    private fun processUDPPacket(size: Int, localIP: Int,
+                                 udpProxyServer: UDPProxyServer?):
+            Pair<IPAccessDirection, Int> {
         mUDPPacket.mOffset = getHeaderLength()
         if (getSourceIP() == localIP && mUDPPacket.getDestinationPort() == 53.toShort()) {
             mDNSBuffer.clear()
             mDNSBuffer.limit(getDataLength() - 8)
+            var dnsPacket = DNSPacket.FromBytes(mDNSBuffer, udpProxyServer)
+            dnsPacket?.processRequest(this)
         }
 
         return Pair(IPAccessDirection.IP_ACCESS_OUTCOMING, 0)
     }
 
-    fun process(size: Int, localIP: Int): Pair<IPAccessDirection, Int> {
+    fun process(size: Int, localIP: Int,
+                udpProxyServer: UDPProxyServer?):
+            Pair<IPAccessDirection, Int> {
         when (getProtocol()) {
             TCP -> return processTCPPacket(size, localIP)
-            UDP -> return processUDPPacket(size, localIP)
+            UDP -> return processUDPPacket(size, localIP, udpProxyServer)
             else -> {
                 SSLocalLogging.debug(TAG, "Unknow protocol packet")
                 return null as Pair<IPAccessDirection, Int>
             }
         }
+    }
+
+    private fun udpChecksum(): Boolean {
+        val oldCrc = getCrc()
+        setCrc(0.toShort())
+        val newCrc = Checksum.checksum(
+                0, mData, mOffset, getHeaderLength())
+        setCrc(newCrc)
+
+        if (oldCrc != newCrc) {
+            return false
+        }
+
+        val bodyLen = getTotalLength() - getHeaderLength()
+        if (bodyLen < 0)
+            return false
+
+        var sum = Checksum.getsum(mData, mOffset + offset_src_ip, 8)
+        sum += getProtocol() and 0xFF.toByte()
+        sum += bodyLen.toLong()
+
+        return mUDPPacket.checksum(sum, bodyLen)
+    }
+
+    fun setupResponseUDPIPHeader() {
+        if (!udpChecksum()) {
+            SSLocalLogging.debug(TAG, "Error UDP packet")
+        }
+
     }
 }

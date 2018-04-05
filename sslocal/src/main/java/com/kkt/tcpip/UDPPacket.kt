@@ -48,8 +48,15 @@ class UDPPacket(data: ByteArray, offset: Int) {
     }
 
     override fun toString(): String {
-        // TODO Auto-generated method stub
         return String.format("%d->%d", getSourcePort() and 0xFFFF.toShort(),
                 getDestinationPort() and 0xFFFF.toShort())
+    }
+
+    fun checksum(sum: Long, size: Int): Boolean {
+        val oldCrc = getCrc()
+        setCrc(0.toShort())
+        val newCrc = Checksum.checksum(sum, mData, mOffset, size)
+        setCrc(newCrc)
+        return oldCrc == newCrc
     }
 }

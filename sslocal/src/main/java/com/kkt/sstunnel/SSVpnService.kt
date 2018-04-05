@@ -1,9 +1,13 @@
-package com.kkt.sslocal
+package com.kkt.sstunnel
 
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import com.kkt.sslocal.TCPProxyServer
+import com.kkt.sslocal.UDPProxyServer
 import com.kkt.tcpip.IPPacket
+import java.net.DatagramSocket
+import java.net.Socket
 
 /**
  * Created by owen on 18-4-4.
@@ -19,6 +23,9 @@ class SSVpnService {
 
         private var mRecvBytes: Long = 0
         private var mSendBytes: Long = 0
+
+        private var mUDPProxyServer: UDPProxyServer? = null
+        private var mTCPProxyServer: TCPProxyServer? = null
 
         fun getNetworkFlow(): Pair<Long, Long> {
             return Pair(mRecvBytes, mSendBytes)
@@ -48,6 +55,7 @@ class SSVpnService {
             override fun run() {
                 waitVpnServicePrepared(mActivity)
                 initVpnInterface(mConfigIntent)
+
                 do {
                     val size: Int = SSVpnImplService.mVpnServiceInstance?.read(mPacket)!!
                     when (size) {
@@ -58,12 +66,15 @@ class SSVpnService {
                         0 -> sleep(10)
                         else -> {
                             val (direction, bytes) = mIPPacket.process(size,
-                                    SSVpnImplService.mVpnServiceInstance?.mLocalIpIntAddr!!)
+                                    SSVpnImplService.mVpnServiceInstance?.mLocalIpIntAddr!!,
+                                    mUDPProxyServer)
                             when (direction) {
                                 IPPacket.IPAccessDirection.IP_ACCESS_INCOMING -> mRecvBytes += bytes
                                 IPPacket.IPAccessDirection.IP_ACCESS_OUTCOMING -> mSendBytes += bytes
                             }
-                            SSVpnImplService.mVpnServiceInstance?.write(mPacket, size)
+                            if (mIPPacket.getProtocol() == IPPacket.TCP) {
+                                SSVpnImplService.mVpnServiceInstance?.write(mPacket, size)
+                            }
                         }
                     }
 
@@ -86,6 +97,12 @@ class SSVpnService {
                        vpnServiceEventListener: SSVpnServiceEventListener) {
             SSLocalLogging.enableLogging()
             mSSVpnServiceEventListener = vpnServiceEventListener
+
+            mUDPProxyServer = UDPProxyServer()
+            mUDPProxyServer?.initialize()
+
+            mTCPProxyServer = TCPProxyServer(10993)
+            mTCPProxyServer?.initialize()
 
             SSVpnImplService.setVpnServiceEventListener(
                     object: SSVpnImplService.SSVpnImplEventListener {
@@ -120,10 +137,25 @@ class SSVpnService {
             mVpnThread?.join()
             SSVpnImplService.mVpnServiceInstance?.cleanup()
             SSVpnImplService.stopSelf()
+
+            mTCPProxyServer?.destroy()
+            mUDPProxyServer?.destroy()
         }
 
-        fun protectSocket(socket: Int) {
-            SSVpnImplService.protectSocket(socket)
+        fun protectSocket(socket: Int): Boolean? {
+            return SSVpnImplService.protectSocket(socket)
+        }
+
+        fun protectSocket(socket: Socket): Boolean? {
+            return SSVpnImplService.protectSocket(socket)
+        }
+
+        fun protectSocket(socket: DatagramSocket): Boolean? {
+            return SSVpnImplService.protectSocket(socket)
+        }
+
+        fun write(buf: ByteArray, size: Int, offset: Int = 0) {
+            SSVpnImplService.mVpnServiceInstance?.write(buf, size, offset)
         }
     }
 }
