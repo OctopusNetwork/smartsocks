@@ -174,7 +174,7 @@ class SSVpnImplService : VpnService() {
         mVpnParcelFileDescriptor = null
     }
 
-    fun read(buf: ByteArray) : Int? {
+    fun read(buf: ByteArray): Int? {
         return mVpnInputStream?.read(buf)
     }
 

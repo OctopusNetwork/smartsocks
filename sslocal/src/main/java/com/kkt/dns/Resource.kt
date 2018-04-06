@@ -31,27 +31,13 @@ class Resource {
 
         fun FromBytes(buffer: ByteBuffer): Resource {
             val r = Resource()
-            SSLocalLogging.debug(TAG,
-                    "Buffer pos: " + buffer.position() +
-                    " limit: " + buffer.limit() +
-                    " capacity: " + buffer.capacity())
             r.offset = buffer.arrayOffset() + buffer.position()
             r.Domain = DNSPacket.ReadDomain(buffer, buffer.arrayOffset())
-            SSLocalLogging.debug(TAG,
-                    "Buffer pos: " + buffer.position() +
-                            " limit: " + buffer.limit() +
-                            " capacity: " + buffer.capacity())
             r.Type = buffer.short
             r.Class = buffer.short
             r.TTL = buffer.int
             r.DataLength = buffer.short
             r.Data = ByteArray((r.DataLength.toInt() and 0xFFFF))
-            SSLocalLogging.debug(TAG,
-                    "Buffer pos: " + buffer.position() +
-                            " limit: " + buffer.limit() +
-                            " capacity: " + buffer.capacity())
-            SSLocalLogging.debug(TAG, "Need: " + r.DataLength +
-                    " remain: " + buffer.remaining())
             buffer.get(r.Data)
             r.length = buffer.arrayOffset() + buffer.position() - r.offset
             return r

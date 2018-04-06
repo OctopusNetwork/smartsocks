@@ -146,11 +146,12 @@ class IPPacket(data: ByteArray, offset: Int) {
     }
 
     override fun toString(): String {
-        return String.format("%s->%s Pro=%s,HLen=%d",
+        return String.format("%s->%s Pro=%s,HLen=%d,BodyLen=%d",
                 IPAddress.hexIpToString(getSourceIP()),
                 IPAddress.hexIpToString(getDestinationIP()),
                 getProtocol(),
-                getHeaderLength())
+                getHeaderLength(),
+                getDataLength())
     }
 
     private fun tcpChecksum(): Boolean {
@@ -160,7 +161,7 @@ class IPPacket(data: ByteArray, offset: Int) {
                 0, mData, mOffset, getHeaderLength())
         setCrc(newCrc)
 
-        if (oldCrc != newCrc) return false
+        if (oldCrc != newCrc) { /* DO nothing */ }
 
         val bodyLen = getTotalLength() - getHeaderLength()
         if (bodyLen < 0) return false
@@ -208,11 +209,10 @@ class IPPacket(data: ByteArray, offset: Int) {
                     if (host != null) {
                         iport.mHost = host
                         SSLocalLogging.debug(TAG,
-                                "Request to: " + iport.mHost + "/" + iport.mIP)
+                                "Request to: " + iport.mHost +
+                                    "/" + IPAddress.hexIpToString(iport.mIP))
                     }
                 }
-
-                SSLocalLogging.debug(TAG, mTCPPacket.toString())
 
                 setSourceIP(getDestinationIP())
                 setDestinationIP(localIP)
@@ -238,6 +238,7 @@ class IPPacket(data: ByteArray, offset: Int) {
         if (getSourceIP() == localIP && mUDPPacket.getDestinationPort() == 53.toShort()) {
             mDNSBuffer.clear()
             mDNSBuffer.limit(getDataLength() - 8)
+            SSLocalLogging.debug(TAG, "DNS Query")
             var dnsPacket = DNSPacket.FromBytes(mDNSBuffer, udpProxyServer)
             dnsPacket?.processRequest(this)
         }
@@ -265,13 +266,10 @@ class IPPacket(data: ByteArray, offset: Int) {
                 0, mData, mOffset, getHeaderLength())
         setCrc(newCrc)
 
-        if (oldCrc != newCrc) {
-            return false
-        }
+        if (oldCrc != newCrc) { /* DO nothing */ }
 
         val bodyLen = getTotalLength() - getHeaderLength()
-        if (bodyLen < 0)
-            return false
+        if (bodyLen < 0) return false
 
         var sum = Checksum.getsum(mData, mOffset + offset_src_ip, 8)
         sum += getProtocol().toInt() and 0xFF
@@ -281,9 +279,6 @@ class IPPacket(data: ByteArray, offset: Int) {
     }
 
     fun setupResponseUDPIPHeader() {
-        if (!udpChecksum()) {
-            SSLocalLogging.debug(TAG, "Error UDP packet")
-        }
-
+        udpChecksum()
     }
 }

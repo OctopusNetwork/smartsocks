@@ -60,20 +60,14 @@ class TCPProxyServer(port: Int) {
 
     private var mTCPProxyServerThread: Thread = Thread(Runnable {
         do {
-            val keyNum = mSelector.select(100)
-            if (0 == keyNum) {
-                continue
-            } else {
-                SSLocalLogging.debug(TAG,
-                        "" + keyNum + " keys ready")
-            }
+            mSelector.select(100)
             val keyIterator = mSelector.selectedKeys().iterator()
             while (keyIterator.hasNext()) {
                 val key = keyIterator.next()
                 if (key.isValid) {
                     when {
-                        key.isReadable -> SSLocalLogging.debug(TAG, "Readable")
-                        key.isWritable -> SSLocalLogging.debug(TAG, "Writable")
+                        key.isReadable -> (key.attachment() as Tunnel).onReadable(key)
+                        key.isWritable -> (key.attachment() as Tunnel).onWritable(key)
                         key.isConnectable -> (key.attachment() as Tunnel).onConnectable()
                         key.isAcceptable -> onAcceptable()
                     }

@@ -3,6 +3,7 @@ package com.kkt.sslocal
 import com.kkt.dns.DNSPacket
 import com.kkt.ssvpn.SSVpnService
 import com.kkt.tcpip.IPPacket
+import com.kkt.utils.SSLocalLogging
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.nio.ByteBuffer
@@ -35,6 +36,7 @@ class UDPProxyServer {
                 dnsBuffer.clear()
                 dnsBuffer.limit(packet.length)
                 try {
+                    SSLocalLogging.debug(TAG, "DNS response")
                     DNSPacket.FromBytes(dnsBuffer,
                             this@UDPProxyServer)?.
                             processResponse(ipPacket)

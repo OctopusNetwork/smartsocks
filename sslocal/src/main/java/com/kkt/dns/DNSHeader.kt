@@ -10,43 +10,61 @@ class DNSHeader(data: ByteArray, offset: Int) {
     val mData = data
     val mOffset = offset
 
-    var mID: Short
-        get() = EasyValue.readShort(mData, mOffset + offset_ID)
-        set(value) {
-            EasyValue.writeShort(mData, mOffset + offset_ID, value)
-        }
+    var mID: Short = 0
+    fun getID(): Short {
+        return EasyValue.readShort(mData, mOffset + offset_ID)
+    }
 
-    var mFlags: Short
-        get() = EasyValue.readShort(mData, mOffset + offset_Flags)
-        set(value) {
-            EasyValue.writeShort(mData, mOffset + offset_Flags, value)
-        }
+    fun setID(value: Short) {
+        EasyValue.writeShort(mData, mOffset + offset_ID, value)
+        mID = value
+    }
 
-    var mQuestionCount: Short
-        get() = EasyValue.readShort(mData, mOffset + offset_QuestionCount)
-        set(value) {
-            EasyValue.writeShort(mData, mOffset + offset_QuestionCount, value)
-        }
+    var mQuestionCount: Short = 0
+    fun getQuestionCount(): Short {
+        return EasyValue.readShort(mData, mOffset + offset_QuestionCount)
+    }
 
-    var mResourceCount: Short
-        get() = EasyValue.readShort(mData, mOffset + offset_ResourceCount)
-        set(value) {
-            EasyValue.writeShort(mData, mOffset + offset_ResourceCount, value)
-        }
+    fun setQuestionCount(value: Short) {
+        EasyValue.writeShort(mData, mOffset + offset_QuestionCount, value)
+    }
 
-    var mAResourceCount: Short
-        get() = EasyValue.readShort(mData, mOffset + offset_AResourceCount)
-        set(value) {
-            EasyValue.writeShort(mData, mOffset + offset_AResourceCount, value)
-        }
+    var mResourceCount: Short = 0
+    fun getResourceCount(): Short {
+        return EasyValue.readShort(mData, mOffset + offset_ResourceCount)
+    }
 
-    var mEResourceCount: Short
-        get() = EasyValue.readShort(mData, mOffset + offset_EResourceCount)
-        set(value) {
-            EasyValue.writeShort(mData, mOffset + offset_EResourceCount, value)
-        }
+    fun setResourceCount(value: Short) {
+        EasyValue.writeShort(mData, mOffset + offset_ResourceCount, value)
+    }
+
+    var mAResourceCount: Short = 0
+    fun getAResourceCount(): Short {
+        return EasyValue.readShort(mData, mOffset + offset_AResourceCount)
+    }
+
+    fun setAResourceCount(value: Short) {
+        EasyValue.writeShort(mData, mOffset + offset_AResourceCount, value)
+    }
+
+    var mEResourceCount: Short = 0
+    fun getEResourceCount(): Short {
+        return EasyValue.readShort(mData, mOffset + offset_EResourceCount)
+    }
+
+    fun setEResourceCount(value: Short) {
+        EasyValue.writeShort(mData, mOffset + offset_EResourceCount, value)
+    }
 
     var mDNSFlags: DNSFlags? = null
+    fun getFlags(): Short {
+        return EasyValue.readShort(mData, mOffset + offset_Flags)
+    }
+
+    fun setFlags(value: Short) {
+        EasyValue.writeShort(mData, mOffset + offset_Flags, value)
+        mDNSFlags = DNSFlags.Parse(value)
+    }
 
     fun ToBytes(buffer: ByteBuffer) {
         buffer.putShort(this.mID)
@@ -60,7 +78,8 @@ class DNSHeader(data: ByteArray, offset: Int) {
     companion object {
 
         fun FromBytes(buffer: ByteBuffer): DNSHeader {
-            val header = DNSHeader(buffer.array(), buffer.arrayOffset() + buffer.position())
+            val header = DNSHeader(buffer.array(),
+                    buffer.arrayOffset() + buffer.position())
             header.mID = buffer.short
             header.mDNSFlags = DNSFlags.Parse(buffer.short)
             header.mQuestionCount = buffer.short

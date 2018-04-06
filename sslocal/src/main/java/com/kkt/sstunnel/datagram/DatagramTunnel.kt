@@ -11,6 +11,15 @@ import java.nio.channels.Selector
  */
 class DatagramTunnel(selector: Selector) :
         Tunnel(TunnelRole.TUNNEL_ROLE_REMOTE, selector) {
+
+    override fun write(buffer: ByteBuffer): Int? {
+        return 0
+    }
+
+    override fun scheduleRemainWrite(buffer: ByteBuffer) {
+
+    }
+
     override fun onConnected() {
 
     }
@@ -36,10 +45,6 @@ class DatagramTunnel(selector: Selector) :
     }
 
     override fun beginReceive() {
-
-    }
-
-    override fun write(buffer: ByteBuffer, copyRemainData: Boolean) {
 
     }
 

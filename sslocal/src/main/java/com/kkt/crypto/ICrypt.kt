@@ -1,4 +1,4 @@
-package com.kkt.cryptor
+package com.kkt.crypto
 
 import java.io.ByteArrayOutputStream
 

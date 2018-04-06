@@ -19,12 +19,7 @@ class DNSPacket(udpProxyServer: UDPProxyServer?) {
     var AResources: Array<Resource?>? = null
     var EResources: Array<Resource?>? = null
 
-    val TAG = "DNSPacket"
-
     var Size: Int = 0
-
-    var mQueryID: Short = 0
-    var mQueryMap: HashMap<Short, QueryState> = HashMap()
 
     val mUDPProxyServer = udpProxyServer
 
@@ -72,7 +67,7 @@ class DNSPacket(udpProxyServer: UDPProxyServer?) {
         state.RemotePort = ipPacket.mUDPPacket.getDestinationPort()
 
         mQueryID++
-        Header.mID = mQueryID
+        Header.setID(mQueryID)
         mQueryMap[mQueryID] = state
 
         val remoteAddress = InetSocketAddress(
@@ -81,9 +76,6 @@ class DNSPacket(udpProxyServer: UDPProxyServer?) {
         val packet = DatagramPacket(ipPacket.mUDPPacket.mData,
                 ipPacket.mUDPPacket.mOffset + 8, Size)
         packet.socketAddress = remoteAddress
-
-        SSLocalLogging.debug(TAG, "DNS Query " + Questions!![0]?.Domain +
-                " -> " + packet.address.canonicalHostName)
         mUDPProxyServer?.send(packet)
     }
 
@@ -92,7 +84,7 @@ class DNSPacket(udpProxyServer: UDPProxyServer?) {
         mQueryMap.remove(Header.mID)
 
         if (state != null) {
-            Header.mID = state.ClientQueryID
+            Header.setID(state.ClientQueryID)
             ipPacket.setSourceIP(state.RemoteIP)
             ipPacket.setDestinationIP(state.ClientIP)
             ipPacket.setProtocol(IPPacket.UDP)
@@ -102,13 +94,16 @@ class DNSPacket(udpProxyServer: UDPProxyServer?) {
             ipPacket.mUDPPacket.setTotalLength(8 + Size)
 
             ipPacket.setupResponseUDPIPHeader()
-
             SSVpnService.write(ipPacket.mData,
-                    ipPacket.mOffset, ipPacket.getTotalLength())
+                    ipPacket.getTotalLength(), ipPacket.mOffset)
         }
     }
 
     companion object {
+        val TAG = "DNSPacket"
+
+        var mQueryID: Short = 0
+        var mQueryMap: HashMap<Short, QueryState> = HashMap()
 
         fun FromBytes(buffer: ByteBuffer,
                       udpProxyServer: UDPProxyServer?):
@@ -136,18 +131,26 @@ class DNSPacket(udpProxyServer: UDPProxyServer?) {
 
             for (i in packet.Questions!!.indices) {
                 packet.Questions!![i] = Question.FromBytes(buffer)
+                SSLocalLogging.debug(TAG,
+                        "Q -> " + packet.Questions!![i]?.Domain)
             }
 
             for (i in packet.Resources!!.indices) {
                 packet.Resources!![i] = Resource.FromBytes(buffer)
+                SSLocalLogging.debug(TAG,
+                        "R -> " + packet.Resources!![i]?.Domain)
             }
 
             for (i in packet.AResources!!.indices) {
                 packet.AResources!![i] = Resource.FromBytes(buffer)
+                SSLocalLogging.debug(TAG,
+                        "AR -> " + packet.AResources!![i]?.Domain)
             }
 
             for (i in packet.EResources!!.indices) {
                 packet.EResources!![i] = Resource.FromBytes(buffer)
+                SSLocalLogging.debug(TAG,
+                        "ER -> " + packet.EResources!![i]?.Domain)
             }
 
             return packet
@@ -175,6 +178,8 @@ class DNSPacket(udpProxyServer: UDPProxyServer?) {
                     }
                     sb.append('.')
                 }
+
+                len = buffer.get().toInt() and 0xFF
             }
 
             if (len == 0 && sb.isNotEmpty()) {

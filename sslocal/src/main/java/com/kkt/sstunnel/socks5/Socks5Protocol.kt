@@ -1,6 +1,6 @@
 package com.kkt.sstunnel.socks5
 
-import com.kkt.cryptor.ICrypt
+import com.kkt.crypto.ICrypt
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 

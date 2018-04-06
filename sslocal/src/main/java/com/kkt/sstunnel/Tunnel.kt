@@ -26,26 +26,27 @@ abstract class Tunnel(role: TunnelRole, selector: Selector) {
 
     var mRole = role
     var mBrotherTunnel: Tunnel? = null
-    var mDestAddress: InetSocketAddress? = null
+    lateinit var mDestAddress: InetSocketAddress
     var mSelector: Selector = selector
 
     fun setBrotherTunnel(tunnel: Tunnel) { mBrotherTunnel = tunnel }
 
-    protected abstract fun onConnected()
-    protected abstract fun isTunnelEstablished(): Boolean
-    protected abstract fun beforeSend(buffer: ByteBuffer)
-    abstract fun afterReceived(buffer: ByteBuffer)
-    protected abstract fun onDispose()
+    protected open fun onConnected() { }
+    protected open fun isTunnelEstablished(): Boolean { return true }
+    open fun beforeSend(buffer: ByteBuffer) { }
+    open fun afterReceived(buffer: ByteBuffer) { }
+    protected open fun onDispose() { }
 
     open fun connect(destAddress: InetSocketAddress) {
         mDestAddress = destAddress
     }
 
     abstract fun beginReceive()
-    abstract fun write(buffer: ByteBuffer, copyRemainData: Boolean)
+    abstract fun write(buffer: ByteBuffer): Int?
+    abstract fun scheduleRemainWrite(buffer: ByteBuffer)
     abstract fun onTunnelEstablished()
     abstract fun onConnectable()
     abstract fun onReadable(key: SelectionKey)
     abstract fun onWritable(key: SelectionKey)
-    abstract fun dispose()
+    open fun dispose() { }
 }
