@@ -37,10 +37,16 @@ open class SocketChannelTunnel : Tunnel {
     override fun write(buffer: ByteBuffer): Int? {
         var bytesWrite = 0
         do {
-            val wlen = mSocketChannel?.write(buffer)
-            when (wlen) {
-                0 -> return bytesWrite
-                else -> bytesWrite += wlen!!
+            var wlen: Int?
+            try {
+                wlen = mSocketChannel?.write(buffer)
+                when (wlen) {
+                    0 -> return bytesWrite
+                    else -> bytesWrite += wlen!!
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+                return -1
             }
         } while (true)
     }
@@ -62,6 +68,7 @@ open class SocketChannelTunnel : Tunnel {
             else dispose()
         } catch (e: IOException) {
             e.printStackTrace()
+            dispose()
         }
     }
 
@@ -76,9 +83,14 @@ open class SocketChannelTunnel : Tunnel {
                 afterReceived(mChannelBuffer)
                 if (isTunnelEstablished() && mChannelBuffer.hasRemaining()) {
                     mBrotherTunnel?.beforeSend(mChannelBuffer)
-                    mBrotherTunnel?.write(mChannelBuffer)
-                    if (mChannelBuffer.hasRemaining()) {
-                        mBrotherTunnel?.scheduleRemainWrite(mChannelBuffer)
+                    var wlen = mBrotherTunnel?.write(mChannelBuffer)
+                    if (0 <= wlen!!) {
+                        if (mChannelBuffer.hasRemaining()) {
+                            mBrotherTunnel?.scheduleRemainWrite(mChannelBuffer)
+                            key.cancel()
+                        }
+                    } else {
+                        dispose()
                         key.cancel()
                     }
                 }
@@ -93,14 +105,18 @@ open class SocketChannelTunnel : Tunnel {
 
     override fun onWritable(key: SelectionKey) {
         this.beforeSend(mWriteRemainingBuffer)
-        write(mWriteRemainingBuffer)
-        if (mWriteRemainingBuffer.hasRemaining()) {
-            key.cancel()
-            if (isTunnelEstablished()) {
-                mBrotherTunnel?.beginReceive()
-            } else {
-                this.beginReceive()
+        val wlen = write(mWriteRemainingBuffer)
+        if (0 <= wlen!!) {
+            if (mWriteRemainingBuffer.hasRemaining()) {
+                key.cancel()
+                if (isTunnelEstablished()) {
+                    mBrotherTunnel?.beginReceive()
+                } else {
+                    this.beginReceive()
+                }
             }
+        } else {
+            dispose()
         }
     }
 
