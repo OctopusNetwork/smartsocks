@@ -18,12 +18,14 @@ open class SocketChannelTunnel : Tunnel {
     }
 
     val TAG = "SocketChannelTunnel"
+    var mUseExternalChannel = false
 
     constructor(role: TunnelRole, selector: Selector) :
             this(null, role, selector)
 
     constructor(socketChannel: SocketChannel?, role: TunnelRole, selector: Selector) :
             super(role, selector) {
+        mUseExternalChannel = (null != socketChannel)
         mSocketChannel = socketChannel ?: SocketChannel.open()
         mSocketChannel?.configureBlocking(false)
     }
@@ -36,9 +38,6 @@ open class SocketChannelTunnel : Tunnel {
         var bytesWrite = 0
         do {
             val wlen = mSocketChannel?.write(buffer)
-            SSLocalLogging.debug(TAG,
-                    "Tunnel: " + mRole.toString() +
-                        " write $bytesWrite bytes")
             when (wlen) {
                 0 -> return bytesWrite
                 else -> bytesWrite += wlen!!
@@ -68,23 +67,27 @@ open class SocketChannelTunnel : Tunnel {
 
     override fun onReadable(key: SelectionKey) {
         mChannelBuffer.clear()
-        val bytesRead: Int? = mSocketChannel?.read(mChannelBuffer)
-        if (bytesRead!! > 0) {
-            SSLocalLogging.debug(TAG,
-                    "Tunnel " + mRole.toString() +
-                        " read $bytesRead bytes")
-            mChannelBuffer.flip()
-            afterReceived(mChannelBuffer)
-            if (isTunnelEstablished() && mChannelBuffer.hasRemaining()) {
-                mBrotherTunnel?.beforeSend(mChannelBuffer)
-                mBrotherTunnel?.write(mChannelBuffer)
-                if (mChannelBuffer.hasRemaining()) {
-                    mBrotherTunnel?.scheduleRemainWrite(mChannelBuffer)
-                    key.cancel()
+        var bytesRead: Int? = 0
+
+        try {
+            bytesRead = mSocketChannel?.read(mChannelBuffer)
+            if (bytesRead!! > 0) {
+                mChannelBuffer.flip()
+                afterReceived(mChannelBuffer)
+                if (isTunnelEstablished() && mChannelBuffer.hasRemaining()) {
+                    mBrotherTunnel?.beforeSend(mChannelBuffer)
+                    mBrotherTunnel?.write(mChannelBuffer)
+                    if (mChannelBuffer.hasRemaining()) {
+                        mBrotherTunnel?.scheduleRemainWrite(mChannelBuffer)
+                        key.cancel()
+                    }
                 }
+            } else if (bytesRead < 0) {
+                dispose()
             }
-        } else if (bytesRead < 0) {
-            this.dispose()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            dispose()
         }
     }
 
@@ -98,6 +101,13 @@ open class SocketChannelTunnel : Tunnel {
             } else {
                 this.beginReceive()
             }
+        }
+    }
+
+    override fun dispose() {
+        super.dispose()
+        if (!mUseExternalChannel) {
+            mSocketChannel?.close()
         }
     }
 }

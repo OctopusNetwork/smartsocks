@@ -35,7 +35,11 @@ abstract class Tunnel(role: TunnelRole, selector: Selector) {
     protected open fun isTunnelEstablished(): Boolean { return true }
     open fun beforeSend(buffer: ByteBuffer) { }
     open fun afterReceived(buffer: ByteBuffer) { }
-    protected open fun onDispose() { }
+    protected open fun onDispose() {
+        val brotherTunnel = mBrotherTunnel
+        mBrotherTunnel = null
+        brotherTunnel?.dispose()
+    }
 
     open fun connect(destAddress: InetSocketAddress) {
         mDestAddress = destAddress
