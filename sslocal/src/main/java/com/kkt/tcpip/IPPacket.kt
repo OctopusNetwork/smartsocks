@@ -221,9 +221,6 @@ class IPPacket(data: ByteArray, offset: Int) {
                 tcpChecksum()
                 iport.mBytesSent += tcpDataSize
 
-                SSLocalLogging.debug(TAG, mTCPPacket.toString())
-                SSLocalLogging.debug(TAG, toString())
-
                 return Pair(IPAccessDirection.IP_ACCESS_OUTCOMING, tcpDataSize)
             }
         }
@@ -254,7 +251,7 @@ class IPPacket(data: ByteArray, offset: Int) {
             UDP -> return processUDPPacket(size, localIP, udpProxyServer)
             else -> {
                 SSLocalLogging.debug(TAG, "Unknow protocol packet")
-                return null as Pair<IPAccessDirection, Int>
+                return Pair(IPAccessDirection.IP_ACCESS_INCOMING, 0)
             }
         }
     }

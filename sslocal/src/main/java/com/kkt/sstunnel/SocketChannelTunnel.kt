@@ -98,7 +98,7 @@ open class SocketChannelTunnel : Tunnel {
                 dispose()
             }
         } catch (e: IOException) {
-            e.printStackTrace()
+            SSLocalLogging.error(TAG, e.toString())
             dispose()
         }
     }

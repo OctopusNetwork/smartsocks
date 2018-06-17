@@ -60,16 +60,37 @@ class TCPProxyServer(port: Int) {
 
     private var mTCPProxyServerThread: Thread = Thread(Runnable {
         do {
-            mSelector.select(100)
+            mSelector.select()
             val keyIterator = mSelector.selectedKeys().iterator()
             while (keyIterator.hasNext()) {
                 val key = keyIterator.next()
                 if (key.isValid) {
                     when {
-                        key.isReadable -> (key.attachment() as Tunnel).onReadable(key)
-                        key.isWritable -> (key.attachment() as Tunnel).onWritable(key)
-                        key.isConnectable -> (key.attachment() as Tunnel).onConnectable()
-                        key.isAcceptable -> onAcceptable()
+                        key.isReadable -> {
+                            val readTunnel = key.attachment() as Tunnel
+                            SSLocalLogging.debug(TAG, "Tunnel " +
+                                    readTunnel.mRole.toString() + " is readable")
+                            readTunnel.onReadable(key)
+                        }
+                        key.isWritable -> {
+                            val writeTunnel = key.attachment() as Tunnel
+                            SSLocalLogging.debug(TAG, "Tunnel " +
+                                    writeTunnel.mRole.toString() + " is writable")
+                            writeTunnel.onWritable(key)
+                        }
+                        key.isConnectable -> {
+                            val connectTunnel = key.attachment() as Tunnel
+                            SSLocalLogging.debug(TAG, "Tunnel " +
+                                    connectTunnel.mRole.toString() + " is connectable")
+                            connectTunnel.onConnectable()
+                        }
+                        key.isAcceptable -> {
+                            SSLocalLogging.debug(TAG, "Proxy is accetable")
+                            onAcceptable()
+                        }
+                        else -> {
+                            SSLocalLogging.debug(TAG, "Unknow key")
+                        }
                     }
                 }
                 keyIterator.remove()

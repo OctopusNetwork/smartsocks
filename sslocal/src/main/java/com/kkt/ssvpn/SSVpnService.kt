@@ -7,6 +7,7 @@ import com.kkt.sslocal.TCPProxyServer
 import com.kkt.sslocal.UDPProxyServer
 import com.kkt.tcpip.IPPacket
 import com.kkt.utils.SSLocalLogging
+import java.io.IOException
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -55,6 +56,10 @@ class SSVpnService {
             SSVpnImplService.mVpnServiceInstance?.setup(configIntent)
         }
 
+        private fun destroyVpnInterface() {
+            SSVpnImplService.mVpnServiceInstance?.cleanup()
+        }
+
         class VpnThread(activity: Activity, configIntent: Intent) : Thread() {
             private val mActivity: Activity = activity
             private val mConfigIntent: Intent = configIntent
@@ -63,29 +68,38 @@ class SSVpnService {
                 initVpnInterface(mConfigIntent)
 
                 do {
-                    val size: Int = SSVpnImplService.mVpnServiceInstance?.read(mPacket)!!
-                    when (size) {
-                        -1 -> {
-                            SSLocalLogging.error(TAG, "VPN interface corrupted")
-                            mSSVpnServiceEventListener?.onVpnServiceCrash()
-                        }
-                        0 -> sleep(10)
-                        else -> {
-                            val (direction, bytes) = mIPPacket.process(size,
-                                    SSVpnImplService.mVpnServiceInstance?.mLocalIpIntAddr!!,
-                                    mUDPProxyServer)
-                            when (direction) {
-                                IPPacket.IPAccessDirection.IP_ACCESS_INCOMING -> mRecvBytes += bytes
-                                IPPacket.IPAccessDirection.IP_ACCESS_OUTCOMING -> mSendBytes += bytes
+                    try {
+                        val size: Int = SSVpnImplService.mVpnServiceInstance?.read(mPacket)!!
+                        when (size) {
+                            -1 -> {
+                                SSLocalLogging.error(TAG, "VPN interface corrupted")
+                                mSSVpnServiceEventListener?.onVpnServiceCrash()
                             }
-                            if (mIPPacket.getProtocol() == IPPacket.TCP) {
-                                SSVpnImplService.mVpnServiceInstance?.write(mPacket, size)
+                            0 -> {
+                                SSLocalLogging.error(TAG, "VPN interface read 0 bytes")
+                                sleep(100)
+                            }
+                            else -> {
+                                val (direction, bytes) = mIPPacket.process(size,
+                                        SSVpnImplService.mVpnServiceInstance?.mLocalIpIntAddr!!,
+                                        mUDPProxyServer)
+                                when (direction) {
+                                    IPPacket.IPAccessDirection.IP_ACCESS_INCOMING -> mRecvBytes += bytes
+                                    IPPacket.IPAccessDirection.IP_ACCESS_OUTCOMING -> mSendBytes += bytes
+                                }
+                                if (mIPPacket.getProtocol() == IPPacket.TCP) {
+                                    SSVpnImplService.mVpnServiceInstance?.write(mPacket, size)
+                                }
                             }
                         }
-                    }
 
-                    if (size < 0) break
+                        if (size < 0) break
+                    } catch (e: IOException) {
+                        break
+                    }
                 } while (mVpnThreadRunning)
+
+                destroyVpnInterface()
             }
         }
 
@@ -141,7 +155,6 @@ class SSVpnService {
         fun destroy() {
             mVpnThreadRunning = false
             mVpnThread?.join()
-            SSVpnImplService.mVpnServiceInstance?.cleanup()
             SSVpnImplService.stopSelf()
 
             mTCPProxyServer?.destroy()
