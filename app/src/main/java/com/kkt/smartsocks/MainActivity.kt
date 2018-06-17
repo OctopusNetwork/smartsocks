@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        SSVpnService.setVpnServer("192.168.199.199", 10993)
+        SSVpnService.setVpnServer("192.168.0.105", 10993)
         switch_vpn.setOnClickListener(object: View.OnClickListener {
             override fun onClick(p0: View?) {
                 mVpnRunning = !mVpnRunning
@@ -88,8 +88,16 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        // RtcEngine.addStunIceConfig("149.28.198.7", 3478,
+        //         "149.28.198.7", "kikakkz", "1qaz2wsx")
+        // RtcEngine.addTurnIceConfig("149.28.198.7", 3478,
+        //         "149.28.198.7", "", "")
+        RtcEngine.addStunIceConfig("192.168.0.105", 3478,
+                "192.168.0.105", "kikakkz", "1qaz2wsx")
+        RtcEngine.addTurnIceConfig("192.168.0.105", 3478,
+                "192.168.0.105", "", "")
         RtcEngine.initialize(RtcEngine.RtcEngineInitConfig(
-                this, "192.168.199.199", 8089),
+                this, "192.168.0.105", 8089),
             object : RtcEngine.RtcSignallingEventListener {
                 override fun onDelPeer(peer: RtcSignalling.RtcPeer) {
                     runOnUiThread { peerListAdapter.delPeer(peer) }

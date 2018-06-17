@@ -77,6 +77,22 @@ class RtcEngine {
 
             }
 
+        fun addStunIceConfig(host: String, port: Int, hostname: String,
+                             username: String, password: String) {
+            mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
+                    RtcAgent.RtcIceServerType.RTC_ICE_STUN,
+                    host, port, hostname, username, password,
+                    RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
+        }
+
+        fun addTurnIceConfig(host: String, port: Int, hostname: String,
+                             username: String, password: String) {
+            mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
+                    RtcAgent.RtcIceServerType.RTC_ICE_TURN,
+                    host, port, hostname, username, password,
+                    RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
+        }
+
         fun initialize(config: RtcEngineInitConfig,
                        signallingEventListener: RtcSignallingEventListener,
                        createChannelListener: RtcAgentContainer.Companion.RtcAgentCreateChannelListener,
@@ -84,7 +100,7 @@ class RtcEngine {
             mRtcEngineInitConfig = config
             mRtcSignallingEventListener = signallingEventListener
 
-            mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
+           mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
                     RtcAgent.RtcIceServerType.RTC_ICE_TURN,
                     "192.168.199.199", 3478,
                     "192.168.199.199",
