@@ -259,7 +259,7 @@ class RtcAgent(context: Context?,
                     PeerConnectionFactory.InitializationOptions.builder(mContext)
                             .setFieldTrials("")
                             .setEnableVideoHwAcceleration(true)
-                            .setEnableInternalTracer(true)
+                            .setEnableInternalTracer(false)
                             .createInitializationOptions())
             mPeerConnectionFactory =
                     PeerConnectionFactory.builder()
@@ -359,6 +359,15 @@ class RtcAgent(context: Context?,
             return mSendDataChannel?.send(DataChannel.Buffer(
                     ByteBuffer.wrap(msg.toByteArray()),
                     true))
+        }
+
+        return false
+    }
+
+    fun send(buffer: ByteBuffer) : Boolean? {
+        if (mSendDataChannelReady) {
+            return mSendDataChannel?.send(DataChannel.Buffer(
+                    buffer, true))
         }
 
         return false

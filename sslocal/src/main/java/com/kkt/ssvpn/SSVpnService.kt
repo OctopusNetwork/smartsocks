@@ -3,8 +3,10 @@ package com.kkt.ssvpn
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import com.kkt.sscontrol.SSVpnControl
 import com.kkt.sslocal.TCPProxyServer
 import com.kkt.sslocal.UDPProxyServer
+import com.kkt.sstunnel.datagram.DatagramTunnel
 import com.kkt.tcpip.IPPacket
 import com.kkt.utils.SSLocalLogging
 import java.io.IOException
@@ -76,7 +78,6 @@ class SSVpnService {
                                 mSSVpnServiceEventListener?.onVpnServiceCrash()
                             }
                             0 -> {
-                                SSLocalLogging.error(TAG, "VPN interface read 0 bytes")
                                 sleep(100)
                             }
                             else -> {

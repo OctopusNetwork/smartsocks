@@ -11,6 +11,7 @@ import com.kkt.tcpip.PortMapping
 import com.kkt.utils.SSLocalLogging
 import java.io.IOException
 import java.net.InetSocketAddress
+import java.nio.ByteBuffer
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.nio.channels.ServerSocketChannel
@@ -22,7 +23,6 @@ import java.nio.channels.SocketChannel
 class TCPProxyServer(port: Int) {
     var mTCPProxyServerRunning: Boolean = false
     private lateinit var mTCPProxySocketChannel: ServerSocketChannel
-    private lateinit var mSelector: Selector
 
     val mPort = port
 
@@ -43,14 +43,41 @@ class TCPProxyServer(port: Int) {
         return null
     }
 
+    companion object {
+        /**
+         * In feature, for multi path transportation, the datagram tunnel should be constructed
+         * by proxy request automatically. Current we just let the user to click the peer item
+         * to create one. Each time a new one is created, the old one is destroyed.
+         * NOTE: It should be protected by synchronize with tcp packet process
+         */
+        private var mDatagramTunnelList: HashMap<String, DatagramTunnel> = HashMap()
+        private var mDatagramTunnel: DatagramTunnel? = null
+        private var mRemotePeerID: String? = null
+        private lateinit var mSelector: Selector
+
+        fun updateTunnel(peerId: String) {
+            if (null != mDatagramTunnelList[mRemotePeerID]) {
+                mDatagramTunnelList[mRemotePeerID]?.dispose()
+            }
+            mDatagramTunnelList.clear()
+            mDatagramTunnelList[peerId] = DatagramTunnel(mSelector, peerId)
+            mDatagramTunnel = mDatagramTunnelList[peerId]
+            mRemotePeerID = peerId
+        }
+
+        fun recv(peerId: String, buffer: ByteBuffer) {
+            mDatagramTunnelList[peerId]?.recv(buffer)
+        }
+    }
+
     private fun onAcceptable() {
         var localChannel = mTCPProxySocketChannel.accept()
         var localTunnel = LocalTunnel(localChannel, mSelector)
         val destAddress = getDestAddress(localChannel)
-        var remoteTunnel: Tunnel? = if (!SSVpnControl.mEnableRtcTunnel) {
+        var remoteTunnel: Tunnel? = if (null == mDatagramTunnel) {
             SSVpnConfig.mVpnServerAddress?.let { Socks5Tunnel(it, mSelector) }
         } else {
-            DatagramTunnel(mSelector)
+            mDatagramTunnel
         }
 
         remoteTunnel?.setBrotherTunnel(localTunnel)

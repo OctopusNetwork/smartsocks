@@ -9,8 +9,9 @@ import java.nio.channels.Selector
 /**
  * Created by owen on 18-4-5.
  */
-class DatagramTunnel(selector: Selector) :
+class DatagramTunnel(selector: Selector, remotePeerID: String) :
         Tunnel(TunnelRole.TUNNEL_ROLE_REMOTE, selector) {
+    var mRemotePeerID = remotePeerID
 
     override fun write(buffer: ByteBuffer): Int? {
         return 0
@@ -66,5 +67,9 @@ class DatagramTunnel(selector: Selector) :
 
     override fun dispose() {
 
+    }
+
+    fun recv(buffer: ByteBuffer) : Int {
+        return 0
     }
 }

@@ -198,5 +198,9 @@ class RtcAgentContainer {
                 v.mRtcAgent.send(msg)
             }
         }
+
+        fun sendToPeer(peerid: String, buffer: ByteBuffer) {
+            mRtcAgentMap[peerid]?.mRtcAgent?.send(buffer)
+        }
     }
 }

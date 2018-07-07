@@ -6,6 +6,7 @@ package com.kkt.sscontrol
 class SSVpnControl {
     companion object {
         var mEnableRtcTunnel: Boolean = false
+        var mEnableMultiTunnel: Boolean = false
 
         fun enableRtcTunnel() {
             mEnableRtcTunnel = true
@@ -13,6 +14,10 @@ class SSVpnControl {
 
         fun bypass(host: String?, port: Int): Boolean {
             return false
+        }
+
+        fun enableMultiTunnel() {
+            mEnableMultiTunnel = true
         }
     }
 }

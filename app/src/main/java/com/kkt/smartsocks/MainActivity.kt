@@ -11,6 +11,8 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
 import com.kkt.rtc.*
+import com.kkt.sscontrol.SSVpnControl
+import com.kkt.sslocal.TCPProxyServer
 import com.kkt.ssvpn.SSVpnService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -57,6 +59,7 @@ class MainActivity : AppCompatActivity() {
             override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 val peer = peerListAdapter.getItem(p2)
                 RtcEngine.createChannel(peer as RtcSignalling.RtcPeer?)
+                TCPProxyServer.updateTunnel(peer?.mPeerID!!)
             }
         }
 
@@ -66,6 +69,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        SSVpnControl.enableRtcTunnel()
         SSVpnService.setVpnServer("192.168.0.105", 10993)
         switch_vpn.setOnClickListener(object: View.OnClickListener {
             override fun onClick(p0: View?) {
@@ -88,16 +92,12 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // RtcEngine.addStunIceConfig("149.28.198.7", 3478,
-        //         "149.28.198.7", "kikakkz", "1qaz2wsx")
-        // RtcEngine.addTurnIceConfig("149.28.198.7", 3478,
-        //         "149.28.198.7", "", "")
-        RtcEngine.addStunIceConfig("192.168.0.105", 3478,
-                "192.168.0.105", "kikakkz", "1qaz2wsx")
-        RtcEngine.addTurnIceConfig("192.168.0.105", 3478,
-                "192.168.0.105", "", "")
+        RtcEngine.addTurnIceConfig("149.28.198.7", 3478,
+                "149.28.198.7", "kikakkz", "1qaz2wsx")
+        RtcEngine.addStunIceConfig("149.28.198.7", 3478,
+                "149.28.198.7", "", "")
         RtcEngine.initialize(RtcEngine.RtcEngineInitConfig(
-                this, "192.168.0.105", 8089),
+                this, "149.28.198.7", 8089),
             object : RtcEngine.RtcSignallingEventListener {
                 override fun onDelPeer(peer: RtcSignalling.RtcPeer) {
                     runOnUiThread { peerListAdapter.delPeer(peer) }
@@ -118,7 +118,6 @@ class MainActivity : AppCompatActivity() {
                             peerId: String,
                             msg: RtcAgentContainer.Companion.RtcAgentDataChannelMessage,
                             info: String?) {
-                        RtcLogging.debug(TAG, "State of: " + peerId)
                         if (null != info) {
                             RtcLogging.debug(TAG, info)
                             runOnUiThread { Toast.makeText(this@MainActivity,
@@ -137,6 +136,7 @@ class MainActivity : AppCompatActivity() {
                             runOnUiThread { Toast.makeText(this@MainActivity,
                                     "Message from " + peerId + ": " + byteBufferToString(info),
                                     Toast.LENGTH_LONG).show() }
+                            TCPProxyServer.recv(peerId, info)
                         }
                     }
                 }

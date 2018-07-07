@@ -100,19 +100,6 @@ class RtcEngine {
             mRtcEngineInitConfig = config
             mRtcSignallingEventListener = signallingEventListener
 
-           mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
-                    RtcAgent.RtcIceServerType.RTC_ICE_TURN,
-                    "192.168.199.199", 3478,
-                    "192.168.199.199",
-                    "kikakkz", "1qaz2wsx",
-                    RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
-            mRtcIceConfigs.add(RtcAgent.RtcIceConfig(
-                    RtcAgent.RtcIceServerType.RTC_ICE_STUN,
-                    "192.168.199.199", 3478,
-                    "192.168.199.199",
-                    "", "",
-                    RtcAgent.RtcIceServerProto.RTC_ICE_PROTO_UDP))
-
             RtcLogging.enableLogging()
             RtcAgentContainer.setRtcSocketProtectListener(protectSocketListener)
             RtcAgentContainer.setRtcAgentCreateChannelListener(createChannelListener)
@@ -132,6 +119,10 @@ class RtcEngine {
 
         fun broadcast(msg: String) {
             RtcAgentContainer.broadcast(msg)
+        }
+
+        fun sendToPeer(peerid: String, buffer: ByteBuffer) {
+            RtcAgentContainer.sendToPeer(peerid, buffer)
         }
     }
 }
